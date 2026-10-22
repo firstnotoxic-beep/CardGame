@@ -1,0 +1,1133 @@
+import React, { useState, useEffect } from 'react';
+import {
+  CardDefinition,
+  CardInstance,
+  DeckConfig,
+  GameState,
+  PlayerState,
+  StructureInstance,
+  TurnPhase,
+  UnitInstance,
+} from './types/game';
+import { CARD_DATABASE } from './data/cards';
+import { STARTER_DECKS } from './data/starterDecks';
+import {
+  generateBattlefield,
+  getAirborneLandingCells,
+  getAttackableCells,
+  getCellId,
+  getReachableCells,
+} from './game/battlefield';
+import {
+  executeCombat,
+  performAirborneDeployment,
+  resolveEconomyIncome,
+  resolveOutpostCaptures,
+} from './game/combat';
+import { runAITurn } from './game/ai';
+import { BattlefieldView } from './components/BattlefieldView';
+import { CardView } from './components/CardView';
+import { DeckBuilder } from './components/DeckBuilder';
+import { CardCreator } from './components/CardCreator';
+import { MultiplayerLobby, GamePlayMode } from './components/MultiplayerLobby';
+import { RankedModal } from './components/RankedModal';
+import { RulesModal } from './components/RulesModal';
+import { soundFx } from './utils/audio';
+import {
+  Shield,
+  Swords,
+  Heart,
+  Zap,
+  Radio,
+  Volume2,
+  VolumeX,
+  RotateCcw,
+  Flag,
+  ArrowRight,
+  Plane,
+  AlertOctagon,
+  ChevronUp,
+  ChevronDown,
+  Sparkles,
+} from 'lucide-react';
+
+export default function App() {
+  // Navigation Screens
+  const [screen, setScreen] = useState<'lobby' | 'battle' | 'deckbuilder' | 'creator'>('lobby');
+
+  // Decks & Custom Cards Persistence
+  const [customCards, setCustomCards] = useState<CardDefinition[]>(() => {
+    try {
+      const saved = localStorage.getItem('riftbound_custom_cards');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [decks, setDecks] = useState<DeckConfig[]>(() => {
+    try {
+      const saved = localStorage.getItem('riftbound_user_decks');
+      return saved ? JSON.parse(saved) : STARTER_DECKS;
+    } catch {
+      return STARTER_DECKS;
+    }
+  });
+
+  const [selectedDeckId, setSelectedDeckId] = useState<string>(decks[0]?.id || STARTER_DECKS[0].id);
+
+  // Ranked Progression & Elo
+  const [userElo, setUserElo] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('riftbound_user_elo');
+      return saved ? Number(saved) : 1200;
+    } catch {
+      return 1200;
+    }
+  });
+
+  const [matchHistory, setMatchHistory] = useState<
+    {
+      id: string;
+      date: string;
+      opponent: string;
+      result: 'Victory' | 'Defeat';
+      eloDelta: number;
+      laneWinner: string;
+    }[]
+  >(() => {
+    try {
+      const saved = localStorage.getItem('riftbound_match_history');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Modals
+  const [showRankedModal, setShowRankedModal] = useState<boolean>(false);
+  const [showRulesModal, setShowRulesModal] = useState<boolean>(false);
+  const [showSurrenderDialog, setShowSurrenderDialog] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(soundFx.getMuted());
+  const [showCombatLog, setShowCombatLog] = useState<boolean>(false);
+
+  // Active Game State
+  const [gameState, setGameState] = useState<GameState | null>(null);
+  const [selectedAirbase, setSelectedAirbase] = useState<StructureInstance | null>(null);
+  const [isAiThinking, setIsAiThinking] = useState<boolean>(false);
+
+  // Elo Tier Calculation
+  const getUserRankTitle = (elo: number) => {
+    if (elo >= 1800) return 'Eternal';
+    if (elo >= 1600) return 'World Architect';
+    if (elo >= 1400) return 'Nexus Master';
+    if (elo >= 1200) return 'Rift Adept';
+    if (elo >= 1000) return 'Striker';
+    return 'Recruit';
+  };
+
+  // Save to localStorage when state changes
+  useEffect(() => {
+    localStorage.setItem('riftbound_custom_cards', JSON.stringify(customCards));
+  }, [customCards]);
+
+  useEffect(() => {
+    localStorage.setItem('riftbound_user_decks', JSON.stringify(decks));
+  }, [decks]);
+
+  useEffect(() => {
+    localStorage.setItem('riftbound_user_elo', userElo.toString());
+  }, [userElo]);
+
+  useEffect(() => {
+    localStorage.setItem('riftbound_match_history', JSON.stringify(matchHistory));
+  }, [matchHistory]);
+
+  // Factory function to start a new game match
+  const startMatch = (mode: GamePlayMode, mapPresetId: string, roomCode?: string) => {
+    const { cells, outposts } = generateBattlefield(mapPresetId);
+    const activeDeck = decks.find((d) => d.id === selectedDeckId) || STARTER_DECKS[0];
+    const opponentDeck = STARTER_DECKS[1];
+
+    // Helper to instantiate deck
+    const makeDeckInstances = (deckCfg: DeckConfig, owner: 'player1' | 'player2'): CardInstance[] => {
+      // Shuffle 50 cards
+      const shuffled = [...deckCfg.cardIds].sort(() => Math.random() - 0.5);
+      return shuffled.map((cardId, idx) => ({
+        instanceId: `inst-${owner}-${idx}-${Date.now()}`,
+        definitionId: cardId,
+        owner,
+        currentZone: 'deck',
+      }));
+    };
+
+    const p1Deck = makeDeckInstances(activeDeck, 'player1');
+    const p2Deck = makeDeckInstances(opponentDeck, 'player2');
+
+    // Draw initial 4 cards for each player
+    const p1Hand = p1Deck.splice(0, 4);
+    const p2Hand = p2Deck.splice(0, 4);
+
+    const partner1 = CARD_DATABASE[activeDeck.partnerId] || CARD_DATABASE['PARTNER-01'];
+    const origin1 = CARD_DATABASE[activeDeck.originId] || CARD_DATABASE['ORIGIN-01'];
+    const partner2 = CARD_DATABASE[opponentDeck.partnerId] || CARD_DATABASE['PARTNER-02'];
+    const origin2 = CARD_DATABASE[opponentDeck.originId] || CARD_DATABASE['ORIGIN-02'];
+
+    const initialUnits: Record<string, UnitInstance> = {};
+    const initialStructures: Record<string, StructureInstance> = {};
+
+    // Starting resource values: 2 Charge, 0 Rift, 2 Resolve
+    let p1Charge = 2;
+    let p1Rift = 0;
+    let p2Charge = 2;
+    let p2Rift = 0;
+
+    // SCENARIO MODE: Airborne Deployment Setup
+    if (mode === 'airborne-scenario') {
+      p1Charge = 4;
+      p1Rift = 2;
+      p2Charge = 4;
+
+      // Spawn Airbase for Player 1 at Row 5, Col 0 (Left Lane Rear)
+      const airbaseId = `airbase-p1-${Date.now()}`;
+      initialStructures[airbaseId] = {
+        id: airbaseId,
+        cardInstanceId: `inst-airbase`,
+        definitionId: 'IF-04',
+        name: 'Tactical Airbase',
+        owner: 'player1',
+        universe: 'iron-frontier',
+        currentHealth: 8,
+        maxHealth: 8,
+        defense: 2,
+        lane: 'left',
+        row: 5,
+        col: 0,
+        structureType: 'airbase',
+      };
+      cells[getCellId(5, 0)].structureId = airbaseId;
+
+      // Spawn Player 1 Riflemen
+      const p1RifleId = `unit-rifle-p1-${Date.now()}`;
+      initialUnits[p1RifleId] = {
+        id: p1RifleId,
+        cardInstanceId: `inst-rifle-p1`,
+        definitionId: 'IF-01',
+        name: 'Frontline Riflemen',
+        owner: 'player1',
+        universe: 'iron-frontier',
+        attack: 3,
+        currentHealth: 4,
+        maxHealth: 4,
+        defense: 1,
+        movePoints: 2,
+        maxMove: 2,
+        range: 1,
+        canCapture: true,
+        keywords: ['Infantry'],
+        statusEffects: [],
+        hasMovedThisTurn: false,
+        hasAttackedThisTurn: false,
+        lane: 'center',
+        row: 4,
+        col: 1,
+      };
+      cells[getCellId(4, 1)].unitId = p1RifleId;
+
+      // Spawn Opponent Guard Mech
+      const p2GuardId = `unit-guard-p2-${Date.now()}`;
+      initialUnits[p2GuardId] = {
+        id: p2GuardId,
+        cardInstanceId: `inst-guard-p2`,
+        definitionId: 'IF-02',
+        name: 'Ironclad Trench Walker',
+        owner: 'player2',
+        universe: 'iron-frontier',
+        attack: 4,
+        currentHealth: 7,
+        maxHealth: 7,
+        defense: 3,
+        movePoints: 1,
+        maxMove: 1,
+        range: 1,
+        canCapture: true,
+        keywords: ['Heavy Armor'],
+        statusEffects: [],
+        hasMovedThisTurn: false,
+        hasAttackedThisTurn: false,
+        lane: 'left',
+        row: 2,
+        col: 0,
+      };
+      cells[getCellId(2, 0)].unitId = p2GuardId;
+    }
+
+    const initialP1: PlayerState = {
+      id: 'player1',
+      name: 'Player 1 (Architect)',
+      isAI: false,
+      baseHealth: 30,
+      maxBaseHealth: 30,
+      resources: {
+        charge: p1Charge,
+        maxCharge: 2,
+        rift: p1Rift,
+        resolve: 2,
+      },
+      deck: p1Deck,
+      hand: p1Hand,
+      discard: [],
+      partner: partner1,
+      origin: origin1,
+      elo: userElo,
+      rankTitle: getUserRankTitle(userElo),
+    };
+
+    const initialP2: PlayerState = {
+      id: 'player2',
+      name: mode === 'hotseat' ? 'Player 2 (Architect)' : 'Architect AI Alpha',
+      isAI: mode === 'ai-skirmish' || mode === 'airborne-scenario',
+      baseHealth: 30,
+      maxBaseHealth: 30,
+      resources: {
+        charge: p2Charge,
+        maxCharge: 2,
+        rift: p2Rift,
+        resolve: 2,
+      },
+      deck: p2Deck,
+      hand: p2Hand,
+      discard: [],
+      partner: partner2,
+      origin: origin2,
+      elo: 1220,
+      rankTitle: 'Rift Adept',
+    };
+
+    const newGameState: GameState = {
+      id: `match-${Date.now()}`,
+      turn: 1,
+      activePlayerId: 'player1',
+      phase: 'deployment',
+      player1: initialP1,
+      player2: initialP2,
+      cells,
+      units: initialUnits,
+      structures: initialStructures,
+      outposts,
+      selectedCellId: null,
+      selectedCardInstanceId: null,
+      selectedUnitId: null,
+      selectedStructureId: null,
+      reachableCellIds: [],
+      attackableCellIds: [],
+      airborneLandingCellIds: [],
+      actionMode: 'idle',
+      combatLog: [
+        `[MATCH START] Sector engaged! Mode: ${mode.toUpperCase()}. Control Outposts in Row 3 to harvest resources.`,
+      ],
+      winner: null,
+      mode,
+      roomCode,
+    };
+
+    setGameState(newGameState);
+    setSelectedAirbase(null);
+    setScreen('battle');
+  };
+
+  // Handle phase advance or End Turn
+  const handleNextPhase = () => {
+    if (!gameState || gameState.winner || isAiThinking) return;
+
+    soundFx.playPhaseChange();
+    let current = JSON.parse(JSON.stringify(gameState)) as GameState;
+
+    // Reset selection highlights
+    current.selectedCellId = null;
+    current.selectedCardInstanceId = null;
+    current.selectedUnitId = null;
+    current.selectedStructureId = null;
+    current.reachableCellIds = [];
+    current.attackableCellIds = [];
+    current.airborneLandingCellIds = [];
+    current.actionMode = 'idle';
+    setSelectedAirbase(null);
+
+    const phases: TurnPhase[] = ['deployment', 'movement', 'combat', 'capture', 'end'];
+    const currentPhaseIdx = phases.indexOf(current.phase);
+
+    if (currentPhaseIdx < phases.length - 2) {
+      // Step to next phase within same turn
+      current.phase = phases[currentPhaseIdx + 1];
+    } else {
+      // End of turn reached! Run Capture Phase and End Phase resolution
+      current = resolveOutpostCaptures(current);
+
+      // Switch active player
+      const nextPlayerId = current.activePlayerId === 'player1' ? 'player2' : 'player1';
+      current.activePlayerId = nextPlayerId;
+      if (nextPlayerId === 'player1') {
+        current.turn += 1;
+      }
+
+      // Start Phase & Economy Phase for new active player
+      current = resolveEconomyIncome(current, nextPlayerId);
+
+      // Draw 1 card for new active player if deck has cards
+      const activeP = nextPlayerId === 'player1' ? current.player1 : current.player2;
+      if (activeP.deck.length > 0 && activeP.hand.length < 7) {
+        const drawn = activeP.deck.shift()!;
+        activeP.hand.push(drawn);
+        current.combatLog.unshift(`[DRAW] ${activeP.name} drew a tactical card.`);
+      }
+
+      // Reset unit action flags for new active player's units
+      Object.values(current.units).forEach((u) => {
+        if (u.owner === nextPlayerId) {
+          u.hasMovedThisTurn = false;
+          u.hasAttackedThisTurn = false;
+          u.movePoints = u.maxMove;
+        }
+      });
+
+      current.phase = 'deployment';
+      current.combatLog.unshift(`[TURN ${current.turn}] ${activeP.name}'s turn has begun.`);
+
+      // Check if next player is AI
+      if (activeP.isAI) {
+        setGameState(current);
+        setIsAiThinking(true);
+        setTimeout(() => {
+          let aiResolved = runAITurn(current);
+          aiResolved = resolveOutpostCaptures(aiResolved);
+
+          // Return control to Player 1
+          aiResolved.activePlayerId = 'player1';
+          aiResolved.turn += 1;
+          aiResolved = resolveEconomyIncome(aiResolved, 'player1');
+
+          if (aiResolved.player1.deck.length > 0 && aiResolved.player1.hand.length < 7) {
+            const drawn = aiResolved.player1.deck.shift()!;
+            aiResolved.player1.hand.push(drawn);
+          }
+
+          Object.values(aiResolved.units).forEach((u) => {
+            if (u.owner === 'player1') {
+              u.hasMovedThisTurn = false;
+              u.hasAttackedThisTurn = false;
+              u.movePoints = u.maxMove;
+            }
+          });
+
+          aiResolved.phase = 'deployment';
+          aiResolved.combatLog.unshift(`[TURN ${aiResolved.turn}] Player 1's turn has begun.`);
+          setGameState(aiResolved);
+          setIsAiThinking(false);
+          soundFx.playDeploy();
+        }, 900);
+        return;
+      }
+    }
+
+    setGameState(current);
+  };
+
+  // Card Selection from Hand
+  const handleHandCardClick = (cardInst: CardInstance) => {
+    if (!gameState || gameState.winner || isAiThinking) return;
+    if (gameState.phase !== 'deployment') return;
+
+    soundFx.playCardSelect();
+    const def = CARD_DATABASE[cardInst.definitionId];
+    if (!def) return;
+
+    const player = gameState.activePlayerId === 'player1' ? gameState.player1 : gameState.player2;
+    const canAfford =
+      player.resources.charge >= (def.cost.charge || 0) &&
+      player.resources.rift >= (def.cost.rift || 0);
+
+    if (!canAfford) return;
+
+    // Highlight legal deployment zones
+    // Units deploy in Base row (6 for P1, 0 for P2) or Rear row (5 for P1, 1 for P2)
+    const validRows = gameState.activePlayerId === 'player1' ? [6, 5] : [0, 1];
+    const reachable: string[] = [];
+
+    validRows.forEach((r) => {
+      [0, 1, 2].forEach((c) => {
+        const cellId = getCellId(r, c);
+        const cell = gameState.cells[cellId];
+        if (cell && !cell.unitId && !cell.structureId) {
+          reachable.push(cellId);
+        }
+      });
+    });
+
+    setGameState({
+      ...gameState,
+      selectedCardInstanceId: cardInst.instanceId,
+      selectedUnitId: null,
+      selectedCellId: null,
+      reachableCellIds: reachable,
+      attackableCellIds: [],
+      airborneLandingCellIds: [],
+      actionMode: 'deploy',
+    });
+  };
+
+  // Unit click on battlefield
+  const handleUnitClick = (unit: UnitInstance) => {
+    if (!gameState || gameState.winner || isAiThinking) return;
+    if (unit.owner !== gameState.activePlayerId) return;
+
+    soundFx.playCardSelect();
+
+    let reachable: string[] = [];
+    let attackable: string[] = [];
+
+    if (gameState.phase === 'movement' && !unit.hasMovedThisTurn) {
+      reachable = getReachableCells(unit, gameState.cells, gameState.units);
+    }
+
+    if (gameState.phase === 'combat' && !unit.hasAttackedThisTurn) {
+      attackable = getAttackableCells(
+        unit,
+        gameState.cells,
+        gameState.units,
+        unit.owner === 'player1' ? 'player2' : 'player1'
+      );
+    }
+
+    setGameState({
+      ...gameState,
+      selectedUnitId: unit.id,
+      selectedCardInstanceId: null,
+      selectedCellId: getCellId(unit.row, unit.col),
+      reachableCellIds: reachable,
+      attackableCellIds: attackable,
+      airborneLandingCellIds: [],
+      actionMode: gameState.phase === 'movement' ? 'move' : gameState.phase === 'combat' ? 'attack' : 'idle',
+    });
+  };
+
+  // Airbase Airborne Drop Action
+  const handleAirbaseDropClick = (structure: StructureInstance) => {
+    if (!gameState || gameState.winner || isAiThinking) return;
+
+    const player = gameState.activePlayerId === 'player1' ? gameState.player1 : gameState.player2;
+    if (player.resources.charge < 3 || player.resources.rift < 1) {
+      alert('Airborne Deployment requires 3 Charge and 1 Rift.');
+      return;
+    }
+
+    soundFx.playCardSelect();
+    const landingCells = getAirborneLandingCells(gameState.cells, player.id);
+
+    setSelectedAirbase(structure);
+    setGameState({
+      ...gameState,
+      selectedStructureId: structure.id,
+      selectedUnitId: null,
+      selectedCardInstanceId: null,
+      reachableCellIds: [],
+      attackableCellIds: [],
+      airborneLandingCellIds: landingCells,
+      actionMode: 'airbase-target',
+    });
+  };
+
+  // Cell click on battlefield
+  const handleCellClick = (cellId: string) => {
+    if (!gameState || gameState.winner || isAiThinking) return;
+
+    const {
+      actionMode,
+      selectedCardInstanceId,
+      selectedUnitId,
+      reachableCellIds,
+      attackableCellIds,
+      airborneLandingCellIds,
+    } = gameState;
+
+    // 1. DEPLOYMENT CONFIRMATION
+    if (actionMode === 'deploy' && selectedCardInstanceId && reachableCellIds.includes(cellId)) {
+      const activePlayer = gameState.activePlayerId === 'player1' ? gameState.player1 : gameState.player2;
+      const cardInstIdx = activePlayer.hand.findIndex((c) => c.instanceId === selectedCardInstanceId);
+      if (cardInstIdx === -1) return;
+
+      const cardInst = activePlayer.hand[cardInstIdx];
+      const def = CARD_DATABASE[cardInst.definitionId];
+      if (!def) return;
+
+      const targetCell = gameState.cells[cellId];
+      if (!targetCell) return;
+
+      // Deduct resources
+      activePlayer.resources.charge -= def.cost.charge || 0;
+      activePlayer.resources.rift -= def.cost.rift || 0;
+      activePlayer.hand.splice(cardInstIdx, 1);
+
+      if (def.cardType === 'unit') {
+        const unitId = `unit-${Date.now()}`;
+        gameState.units[unitId] = {
+          id: unitId,
+          cardInstanceId: cardInst.instanceId,
+          definitionId: def.id,
+          name: def.name,
+          owner: gameState.activePlayerId,
+          universe: def.universe,
+          attack: def.attack || 2,
+          currentHealth: def.health || 4,
+          maxHealth: def.health || 4,
+          defense: def.defense || 0,
+          movePoints: def.move || 2,
+          maxMove: def.move || 2,
+          range: def.range || 1,
+          canCapture: def.canCapture ?? true,
+          keywords: def.keywords || [],
+          statusEffects: [],
+          hasMovedThisTurn: false,
+          hasAttackedThisTurn: false,
+          lane: targetCell.lane,
+          row: targetCell.row,
+          col: targetCell.col,
+        };
+        targetCell.unitId = unitId;
+        soundFx.playDeploy();
+        gameState.combatLog.unshift(
+          `[DEPLOY] ${activePlayer.name} deployed ${def.name} in ${targetCell.lane.toUpperCase()} lane (${cellId}).`
+        );
+      } else if (def.cardType === 'structure') {
+        const structId = `struct-${Date.now()}`;
+        gameState.structures[structId] = {
+          id: structId,
+          cardInstanceId: cardInst.instanceId,
+          definitionId: def.id,
+          name: def.name,
+          owner: gameState.activePlayerId,
+          universe: def.universe,
+          currentHealth: def.health || 6,
+          maxHealth: def.health || 6,
+          defense: def.defense || 2,
+          lane: targetCell.lane,
+          row: targetCell.row,
+          col: targetCell.col,
+          structureType: def.id === 'IF-04' ? 'airbase' : 'bunker',
+        };
+        targetCell.structureId = structId;
+        soundFx.playDeploy();
+        gameState.combatLog.unshift(
+          `[CONSTRUCTION] ${activePlayer.name} constructed ${def.name} in ${targetCell.lane.toUpperCase()} lane.`
+        );
+      } else if (def.cardType === 'tactic') {
+        // Direct tactic resolution
+        soundFx.playAttack('arcane');
+        gameState.combatLog.unshift(
+          `[TACTIC] ${activePlayer.name} invoked ${def.name}: ${def.abilities?.[0]?.description || 'Tactic executed'}`
+        );
+      }
+
+      setGameState({
+        ...gameState,
+        selectedCardInstanceId: null,
+        reachableCellIds: [],
+        actionMode: 'idle',
+      });
+      return;
+    }
+
+    // 2. MOVEMENT CONFIRMATION
+    if (actionMode === 'move' && selectedUnitId && reachableCellIds.includes(cellId)) {
+      const unit = gameState.units[selectedUnitId];
+      const targetCell = gameState.cells[cellId];
+      if (!unit || !targetCell) return;
+
+      const originCell = gameState.cells[getCellId(unit.row, unit.col)];
+      if (originCell) originCell.unitId = null;
+
+      unit.row = targetCell.row;
+      unit.col = targetCell.col;
+      unit.lane = targetCell.lane;
+      unit.hasMovedThisTurn = true;
+      unit.movePoints = 0;
+      targetCell.unitId = unit.id;
+
+      soundFx.playMove();
+      gameState.combatLog.unshift(
+        `[MOVE] ${unit.name} maneuvered to ${targetCell.lane.toUpperCase()} lane (${cellId}).`
+      );
+
+      setGameState({
+        ...gameState,
+        selectedUnitId: null,
+        selectedCellId: null,
+        reachableCellIds: [],
+        actionMode: 'idle',
+      });
+      return;
+    }
+
+    // 3. COMBAT ATTACK CONFIRMATION
+    if (actionMode === 'attack' && selectedUnitId && attackableCellIds.includes(cellId)) {
+      const attacker = gameState.units[selectedUnitId];
+      if (!attacker) return;
+
+      try {
+        const combat = executeCombat(attacker, cellId, gameState);
+        let next = combat.nextState;
+
+        // Check victory
+        if (next.winner) {
+          handleGameOver(next.winner, next);
+          return;
+        }
+
+        setGameState({
+          ...next,
+          selectedUnitId: null,
+          selectedCellId: null,
+          attackableCellIds: [],
+          actionMode: 'idle',
+        });
+      } catch (err: unknown) {
+        console.error('Combat execution error:', err);
+      }
+      return;
+    }
+
+    // 4. AIRBASE AIRBORNE DEPLOYMENT CONFIRMATION
+    if (actionMode === 'airbase-target' && airborneLandingCellIds.includes(cellId)) {
+      try {
+        const next = performAirborneDeployment(gameState, gameState.activePlayerId, cellId);
+        setSelectedAirbase(null);
+        setGameState({
+          ...next,
+          selectedStructureId: null,
+          airborneLandingCellIds: [],
+          actionMode: 'idle',
+        });
+      } catch (err: unknown) {
+        alert(err instanceof Error ? err.message : 'Airborne drop failed');
+      }
+      return;
+    }
+
+    // Default cell selection
+    setGameState({
+      ...gameState,
+      selectedCellId: cellId,
+      reachableCellIds: [],
+      attackableCellIds: [],
+      airborneLandingCellIds: [],
+      actionMode: 'idle',
+    });
+  };
+
+  // Surrender Handler
+  const handleSurrender = () => {
+    if (!gameState) return;
+    const winnerId: 'player1' | 'player2' = gameState.activePlayerId === 'player1' ? 'player2' : 'player1';
+    const next: GameState = { ...gameState, winner: winnerId, winReason: 'Opponent conceded the match.' };
+    setShowSurrenderDialog(false);
+    handleGameOver(winnerId, next);
+  };
+
+  // Game Over Handler
+  const handleGameOver = (winnerId: 'player1' | 'player2', stateToUpdate: GameState) => {
+    const isPlayerWin = winnerId === 'player1';
+    const eloChange = isPlayerWin ? 25 : -18;
+    const newElo = Math.max(800, userElo + eloChange);
+    setUserElo(newElo);
+
+    const record = {
+      id: `match-${Date.now()}`,
+      date: new Date().toLocaleDateString(),
+      opponent: stateToUpdate.player2.name,
+      result: isPlayerWin ? ('Victory' as const) : ('Defeat' as const),
+      eloDelta: eloChange,
+      laneWinner: `${stateToUpdate.player1.baseHealth} - ${stateToUpdate.player2.baseHealth} HP`,
+    };
+    setMatchHistory([record, ...matchHistory]);
+    setGameState(stateToUpdate);
+  };
+
+  // Active player resources
+  const activeP = gameState?.activePlayerId === 'player1' ? gameState.player1 : gameState?.player2;
+  const inspectedCard = gameState?.selectedCardInstanceId
+    ? CARD_DATABASE[
+        activeP?.hand.find((c) => c.instanceId === gameState.selectedCardInstanceId)?.definitionId || ''
+      ]
+    : gameState?.selectedUnitId && gameState.units[gameState.selectedUnitId]
+    ? CARD_DATABASE[gameState.units[gameState.selectedUnitId].definitionId]
+    : null;
+
+  // Render Screens
+  if (screen === 'deckbuilder') {
+    return (
+      <DeckBuilder
+        currentDeck={decks.find((d) => d.id === selectedDeckId) || decks[0]}
+        customCards={customCards}
+        onSaveDeck={(saved) => {
+          const idx = decks.findIndex((d) => d.id === saved.id);
+          if (idx >= 0) {
+            const copy = [...decks];
+            copy[idx] = saved;
+            setDecks(copy);
+          } else {
+            setDecks([...decks, saved]);
+          }
+          setSelectedDeckId(saved.id);
+        }}
+        onClose={() => setScreen('lobby')}
+      />
+    );
+  }
+
+  if (screen === 'creator') {
+    return (
+      <CardCreator
+        onSaveCustomCard={(newCard) => {
+          setCustomCards([newCard, ...customCards]);
+        }}
+        onClose={() => setScreen('lobby')}
+      />
+    );
+  }
+
+  if (screen === 'lobby' || !gameState) {
+    return (
+      <>
+        <MultiplayerLobby
+          decks={decks}
+          selectedDeckId={selectedDeckId}
+          onSelectDeckId={setSelectedDeckId}
+          onStartGame={startMatch}
+          onOpenDeckBuilder={() => setScreen('deckbuilder')}
+          onOpenCardCreator={() => setScreen('creator')}
+          onOpenRanked={() => setShowRankedModal(true)}
+          onOpenRules={() => setShowRulesModal(true)}
+          userElo={userElo}
+          userRank={getUserRankTitle(userElo)}
+        />
+        {showRankedModal && (
+          <RankedModal
+            userElo={userElo}
+            userRank={getUserRankTitle(userElo)}
+            matchHistory={matchHistory}
+            onClose={() => setShowRankedModal(false)}
+          />
+        )}
+        {showRulesModal && <RulesModal onClose={() => setShowRulesModal(false)} />}
+      </>
+    );
+  }
+
+  // ==========================================
+  // ACTIVE BATTLE SCREEN
+  // ==========================================
+  const canAffordAirborne =
+    (activeP?.resources.charge ?? 0) >= 3 && (activeP?.resources.rift ?? 0) >= 1;
+
+  return (
+    <div className="flex flex-col min-h-screen w-full bg-slate-950 text-slate-100 select-none overflow-x-hidden">
+      {/* 1. TOP STATUS BAR */}
+      <header className="flex items-center justify-between px-4 py-2.5 bg-slate-900 border-b border-slate-800 z-20">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setScreen('lobby')}
+            className="text-xs font-bold text-slate-400 hover:text-cyan-300 transition-colors uppercase tracking-wider"
+          >
+            ← Leave Sector
+          </button>
+          <span className="text-slate-600">|</span>
+          <div className="flex items-center gap-2">
+            <span className="font-display font-black text-sm text-cyan-400">
+              TURN {gameState.turn}
+            </span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-950 text-indigo-300 border border-indigo-700/50">
+              {gameState.phase.toUpperCase()} PHASE
+            </span>
+          </div>
+        </div>
+
+        {/* Center: Turn Ownership & AI Status */}
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-slate-400">Active Commander:</span>
+          <span
+            className={`font-bold ${
+              gameState.activePlayerId === 'player1' ? 'text-sky-400' : 'text-rose-400'
+            }`}
+          >
+            {activeP?.name}
+          </span>
+          {isAiThinking && (
+            <span className="text-amber-400 font-semibold animate-pulse text-xs">
+              (AI Calculating Tactics...)
+            </span>
+          )}
+        </div>
+
+        {/* Right: Audio & Controls */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const muted = soundFx.toggleMute();
+              setIsMuted(muted);
+            }}
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300"
+            title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+          >
+            {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-cyan-400" />}
+          </button>
+
+          <button
+            onClick={() => setShowRulesModal(true)}
+            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-semibold"
+          >
+            Manual
+          </button>
+
+          <button
+            onClick={() => setShowSurrenderDialog(true)}
+            className="px-2.5 py-1 rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs font-bold border border-rose-800/40"
+          >
+            Concede
+          </button>
+        </div>
+      </header>
+
+      {/* 2. MAIN BATTLE AREA & SIDEBAR */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-3 max-w-7xl mx-auto w-full overflow-hidden">
+        {/* BATTLEFIELD GRID (8 cols) */}
+        <div className="lg:col-span-8 flex flex-col justify-center">
+          <BattlefieldView
+            state={gameState}
+            onCellClick={handleCellClick}
+            onUnitClick={handleUnitClick}
+            onAirbaseDropClick={handleAirbaseDropClick}
+            canPerformAirborneDrop={canAffordAirborne}
+            selectedAirbase={selectedAirbase}
+          />
+        </div>
+
+        {/* RIGHT CONTROL COLUMN: INSPECTOR & LOGS (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col gap-3 justify-between">
+          {/* Active Player Resource Hub */}
+          <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 shadow-xl">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Resource Reserve
+              </span>
+              <span className="text-[10px] text-slate-500 font-mono-nums">
+                Income: Outpost Controlled
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-center font-mono-nums">
+              <div className="p-2 rounded-lg bg-amber-950/30 border border-amber-800/40">
+                <div className="text-[10px] uppercase font-bold text-amber-400 flex items-center justify-center gap-1">
+                  <Zap className="w-3 h-3" /> Charge
+                </div>
+                <div className="text-base font-bold text-amber-300 mt-0.5">
+                  {activeP?.resources.charge} / {activeP?.resources.maxCharge}
+                </div>
+              </div>
+
+              <div className="p-2 rounded-lg bg-purple-950/30 border border-purple-800/40">
+                <div className="text-[10px] uppercase font-bold text-purple-400 flex items-center justify-center gap-1">
+                  <Radio className="w-3 h-3" /> Rift
+                </div>
+                <div className="text-base font-bold text-purple-300 mt-0.5">
+                  {activeP?.resources.rift}
+                </div>
+              </div>
+
+              <div className="p-2 rounded-lg bg-sky-950/30 border border-sky-800/40">
+                <div className="text-[10px] uppercase font-bold text-sky-400 flex items-center justify-center gap-1">
+                  <Shield className="w-3 h-3" /> Resolve
+                </div>
+                <div className="text-base font-bold text-sky-300 mt-0.5">
+                  {activeP?.resources.resolve}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Card / Unit Tactical Inspector */}
+          <div className="flex-1 flex flex-col items-center justify-center p-3 rounded-xl bg-slate-900/70 border border-slate-800">
+            {inspectedCard ? (
+              <div className="scale-90 sm:scale-95 transition-transform">
+                <CardView card={inspectedCard} variant="detail" />
+              </div>
+            ) : (
+              <div className="text-center p-6 text-slate-500 text-xs italic">
+                Select a card in your hand to preview deployment, or click a unit on the field to command movement and combat attacks.
+              </div>
+            )}
+          </div>
+
+          {/* Phase Advance / End Turn Big CTA Button */}
+          <button
+            onClick={handleNextPhase}
+            disabled={isAiThinking}
+            className={`w-full py-3.5 px-4 rounded-xl font-display font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl transition-all ${
+              gameState.phase === 'capture' || gameState.phase === 'end'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 shadow-emerald-950/60'
+                : 'bg-gradient-to-r from-cyan-500 to-sky-600 hover:from-cyan-400 hover:to-sky-500 text-slate-950 shadow-cyan-950/60'
+            }`}
+          >
+            <span>
+              {gameState.phase === 'deployment'
+                ? 'Advance to Movement Phase'
+                : gameState.phase === 'movement'
+                ? 'Advance to Combat Phase'
+                : gameState.phase === 'combat'
+                ? 'Advance to Capture Phase'
+                : 'Conclude & End Turn'}
+            </span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* 3. BOTTOM HAND CAROUSEL DOCK */}
+      <div className="sticky bottom-0 z-20 w-full bg-slate-950/95 border-t border-slate-800 p-2.5 backdrop-blur-md">
+        <div className="flex items-center justify-between max-w-7xl mx-auto gap-3">
+          <div className="text-xs font-bold text-slate-400 shrink-0 hidden sm:block">
+            <span>Hand ({activeP?.hand.length || 0})</span>
+            <div className="text-[10px] text-slate-500">
+              Deck: {activeP?.deck.length || 0} cards
+            </div>
+          </div>
+
+          {/* Horizontal scrollable cards */}
+          <div className="flex items-center gap-2 overflow-x-auto py-1 px-1 flex-1">
+            {activeP?.hand.map((cardInst) => {
+              const def = CARD_DATABASE[cardInst.definitionId];
+              if (!def) return null;
+              const canAfford =
+                (activeP.resources.charge >= (def.cost.charge || 0)) &&
+                (activeP.resources.rift >= (def.cost.rift || 0));
+
+              return (
+                <CardView
+                  key={cardInst.instanceId}
+                  card={def}
+                  variant="hand"
+                  isSelected={gameState.selectedCardInstanceId === cardInst.instanceId}
+                  canAfford={canAfford}
+                  onClick={() => handleHandCardClick(cardInst)}
+                />
+              );
+            })}
+          </div>
+
+          {/* Toggle Combat Log Drawer Button */}
+          <button
+            onClick={() => setShowCombatLog(!showCombatLog)}
+            className="flex items-center gap-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-300 font-semibold shrink-0"
+          >
+            <span>Log</span>
+            {showCombatLog ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* COMBAT LOG SLIDE-OVER */}
+      {showCombatLog && (
+        <div className="fixed bottom-24 right-4 z-40 max-w-md w-full bg-slate-950 border border-slate-800 rounded-xl p-3 shadow-2xl max-h-60 overflow-y-auto font-mono-nums text-xs">
+          <div className="flex items-center justify-between pb-1.5 border-b border-slate-800 mb-2">
+            <span className="font-bold text-slate-300">Tactical Engagement Log</span>
+            <button onClick={() => setShowCombatLog(false)} className="text-slate-500 hover:text-slate-300">
+              ✕
+            </button>
+          </div>
+          <div className="space-y-1">
+            {gameState.combatLog.map((log, i) => (
+              <div key={i} className="text-[11px] text-slate-400 leading-tight">
+                {log}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* SURRENDER CONFIRMATION MODAL */}
+      {showSurrenderDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-rose-900/60 rounded-xl p-5 max-w-sm w-full text-center">
+            <AlertOctagon className="w-10 h-10 text-rose-500 mx-auto mb-2" />
+            <h3 className="text-sm font-bold text-slate-100">Concede Sector?</h3>
+            <p className="text-xs text-slate-400 mt-1">
+              Surrendering will forfeit the match and grant victory to the opponent.
+            </p>
+            <div className="flex justify-center gap-2 mt-4">
+              <button
+                onClick={() => setShowSurrenderDialog(false)}
+                className="px-4 py-1.5 rounded-lg bg-slate-800 text-xs text-slate-300"
+              >
+                Continue Battle
+              </button>
+              <button
+                onClick={handleSurrender}
+                className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white"
+              >
+                Confirm Concede
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VICTORY / DEFEAT GAME OVER MODAL */}
+      {gameState.winner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+          <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 max-w-md w-full text-center shadow-2xl">
+            <div
+              className={`font-display font-black text-3xl tracking-widest uppercase mb-1 ${
+                gameState.winner === 'player1' ? 'text-cyan-400' : 'text-rose-500'
+              }`}
+            >
+              {gameState.winner === 'player1' ? 'SECTOR SECURED' : 'SECTOR OVERRUN'}
+            </div>
+            <div className="text-sm text-slate-300 font-semibold mb-4">
+              {gameState.winReason || (gameState.winner === 'player1' ? 'Victory Achieved!' : 'Defeat')}
+            </div>
+
+            <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-1 mb-5">
+              <div className="flex justify-between text-slate-400">
+                <span>Rating Update:</span>
+                <span className="font-mono-nums font-bold text-amber-300">
+                  {userElo} ELO ({gameState.winner === 'player1' ? '+25' : '-18'})
+                </span>
+              </div>
+              <div className="flex justify-between text-slate-400">
+                <span>Final Turn:</span>
+                <span className="font-mono-nums text-slate-200">{gameState.turn}</span>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setScreen('lobby')}
+                className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200"
+              >
+                Return to Lobby
+              </button>
+              <button
+                onClick={() => startMatch(gameState.mode, 'map-forest-frontier')}
+                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-600 hover:from-cyan-400 hover:to-sky-500 text-xs font-bold text-slate-950 shadow-lg shadow-cyan-950/40"
+              >
+                Play Rematch
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rules Modal */}
+      {showRulesModal && <RulesModal onClose={() => setShowRulesModal(false)} />}
+    </div>
+  );
+}
