@@ -65,7 +65,7 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
               RIFTBOUND
             </h1>
             <div className="text-[10px] uppercase font-bold tracking-widest text-cyan-400">
-              Frontline Nexus · Multiverse Warfare
+              แนวรบเน็กซัส (Frontline Nexus) · มหายุทธสงครามพหุภพ
             </div>
           </div>
         </div>
@@ -76,32 +76,32 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
             onClick={onOpenDeckBuilder}
             className="hover:text-cyan-300 transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0"
           >
-            <Layers className="w-4 h-4 text-cyan-400" /> Deck Builder
+            <Layers className="w-4 h-4 text-cyan-400" /> จัดเด็คการ์ด (Deck Builder)
           </button>
           <button
             onClick={onOpenCardCreator}
             className="hover:text-pink-300 transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0"
           >
-            <Sparkles className="w-4 h-4 text-pink-400" /> Creator's Circle
+            <Sparkles className="w-4 h-4 text-pink-400" /> สร้างการ์ดเอง (Creator's Circle)
           </button>
           <button
             onClick={onOpenRanked}
             className="hover:text-amber-300 transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0"
           >
-            <Shield className="w-4 h-4 text-amber-400" /> Ranked Ladder
+            <Shield className="w-4 h-4 text-amber-400" /> จัดอันดับ (Ranked Ladder)
           </button>
           <button
             onClick={onOpenRules}
             className="hover:text-slate-200 transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0"
           >
-            <HelpCircle className="w-4 h-4 text-slate-400" /> How to Play
+            <HelpCircle className="w-4 h-4 text-slate-400" /> วิธีเล่น (How to Play)
           </button>
         </nav>
 
         {/* Zone 3: Player Elo & Quick Launch */}
         <div className="flex items-center gap-3 shrink-0">
           <div className="text-right hidden sm:block">
-            <div className="text-[10px] uppercase font-bold text-slate-400">Rating</div>
+            <div className="text-[10px] uppercase font-bold text-slate-400">คะแนนอันดับ</div>
             <div className="text-xs font-mono-nums font-bold text-amber-300">
               {userRank} · {userElo} Elo
             </div>
@@ -110,7 +110,7 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
             onClick={handleStart}
             className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-display font-black text-xs uppercase tracking-wider shadow-xl shadow-cyan-900/40 transition-all flex items-center gap-2 whitespace-nowrap shrink-0"
           >
-            <Play className="w-4 h-4 fill-current" /> Deploy to Frontline
+            <Play className="w-4 h-4 fill-current" /> เข้าสู่สนามรบ (Deploy)
           </button>
         </div>
       </header>
@@ -120,7 +120,7 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
         {/* LEFT: GAME MODE SELECTION (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
           <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">
-            Select Tactical Engagement Mode
+            เลือกโหมดการประลองยุทธวิธี (Tactical Mode)
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -141,12 +141,12 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
                   <Bot className="w-5 h-5" />
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/40">
-                  Single Player
+                  เล่นคนเดียว
                 </span>
               </div>
-              <div className="font-bold text-sm text-slate-100">AI Architect Skirmish</div>
+              <div className="font-bold text-sm text-slate-100">ดวลกับ AI สถาปนิก (AI Skirmish)</div>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Battle against our tactical AI bot that advances across three lanes, captures Outposts, and coordinates assaults.
+                ต่อสู้กับบอท AI ยุทธวิธีที่เดินทัพผ่าน 3 เลน ยึดครองจุดยุทธศาสตร์ และประสานการโจมตีอย่างชาญฉลาด
               </p>
             </button>
 
@@ -167,12 +167,12 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
                   <Users className="w-5 h-5" />
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-800/40">
-                  Local 1v1
+                  เล่น 2 คนในเครื่องเดียว
                 </span>
               </div>
-              <div className="font-bold text-sm text-slate-100">Pass & Play Hotseat</div>
+              <div className="font-bold text-sm text-slate-100">ผลัดกันเล่น (Pass & Play Hotseat)</div>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Two human commanders compete on the same device with alternating turns and tactical inspection.
+                ผู้เล่นสองคนประลองฝีมือบนอุปกรณ์เครื่องเดียวกัน สลับเทิร์นและตรวจดูกลยุทธ์ของกันและกัน
               </p>
             </button>
 
@@ -193,12 +193,12 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
                   <Plane className="w-5 h-5" />
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/40">
-                  Tactical Scenario
+                  สถานการณ์จำลองพิเศษ
                 </span>
               </div>
-              <div className="font-bold text-sm text-slate-100">Airborne Logistics Drop</div>
+              <div className="font-bold text-sm text-slate-100">ปฏิบัติการทิ้งร่มทางอากาศ (Airborne Drop)</div>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Jump right in with a constructed Airbase and Paratroopers ready to execute behind-the-lines Outpost conquest.
+                เข้าสู่เกมพร้อมฐานทัพอากาศและหน่วยพลร่ม เพื่อทดลองระบบทิ้งร่มทางอากาศยึดฐานแนวหลังได้ทันที
               </p>
             </button>
 
@@ -219,12 +219,12 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
                   <Globe className="w-5 h-5" />
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400 bg-purple-950/60 px-2 py-0.5 rounded border border-purple-800/40">
-                  P2P Multi-Tab
+                  มัลติเพลเยอร์ P2P
                 </span>
               </div>
-              <div className="font-bold text-sm text-slate-100">Room Code Matchmaking</div>
+              <div className="font-bold text-sm text-slate-100">จับคู่ด้วยรหัสห้อง (Room Code)</div>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Connect two browser windows or tabs in real-time using secure broadcast sync with custom room codes.
+                เชื่อมต่อสองหน้าต่างเบราว์เซอร์หรือสองแท็บแบบเรียลไทม์ด้วยระบบ Broadcast ซิงค์ห้องอัตโนมัติ
               </p>
             </button>
           </div>
@@ -233,7 +233,7 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
           {mode === 'room-lobby' && (
             <div className="p-4 rounded-xl bg-purple-950/30 border border-purple-800/60 mt-3 space-y-2">
               <div className="text-xs font-bold text-purple-300">
-                P2P Room Synchronization
+                ระบบซิงค์ห้องประลอง P2P
               </div>
               <div className="flex items-center gap-2">
                 <input
@@ -241,7 +241,7 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
                   value={roomCode}
                   onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                   className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono font-bold text-slate-100 uppercase tracking-widest focus:outline-none focus:border-purple-400"
-                  placeholder="ROOM-CODE"
+                  placeholder="รหัสห้อง"
                 />
                 <button
                   onClick={() => {
@@ -250,11 +250,11 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
                   }}
                   className="px-3 py-1.5 rounded-lg bg-purple-900/60 hover:bg-purple-800 text-purple-200 text-xs font-semibold"
                 >
-                  Generate New Code
+                  สุ่มรหัสใหม่
                 </button>
               </div>
               <p className="text-[11px] text-slate-400 leading-normal">
-                Open this app in a second window or tab with the same room code to play a 2-player synchronized match.
+                เปิดแอปพลิเคชันนี้ในอีกหน้าต่างหนึ่งหรือแท็บใหม่โดยใส่รหัสห้องเดียวกัน เพื่อประลอง 2 คนแบบเรียลไทม์
               </p>
             </div>
           )}
@@ -266,13 +266,13 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Active Tactical Deck
+                เด็คยุทธวิธีที่เลือก
               </span>
               <button
                 onClick={onOpenDeckBuilder}
                 className="text-xs text-cyan-400 hover:underline font-semibold"
               >
-                Edit in Studio
+                แก้ไขในสตูดิโอ
               </button>
             </div>
 
@@ -283,7 +283,7 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
             >
               {decks.map((d) => (
                 <option key={d.id} value={d.id}>
-                  {d.name} ({d.cardIds.length} cards)
+                  {d.name} ({d.cardIds.length} ใบ)
                 </option>
               ))}
             </select>
@@ -292,7 +292,7 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
           {/* Map Preset Selector */}
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
-              Battlefield Sector
+              พื้นที่สมรภูมิ (Battlefield Sector)
             </span>
 
             <select
@@ -311,7 +311,7 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
               <div className="font-semibold text-slate-200">{selectedMap.name}</div>
               <p className="text-[11px] text-slate-400">{selectedMap.description}</p>
               <div className="text-[11px] text-amber-300 font-semibold pt-1 border-t border-slate-800">
-                Rule: {selectedMap.specialRules}
+                กฎพิเศษ: {selectedMap.specialRules}
               </div>
             </div>
           </div>
@@ -321,14 +321,14 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
             onClick={handleStart}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-display font-black text-sm uppercase tracking-wider shadow-xl shadow-cyan-950/60 transition-all flex items-center justify-center gap-2"
           >
-            <Play className="w-5 h-5 fill-current" /> Launch Battle Simulation
+            <Play className="w-5 h-5 fill-current" /> เริ่มต้นการจำลองสงคราม (Start Game)
           </button>
         </div>
       </div>
 
       {/* FOOTER: Flat Control Hints */}
       <footer className="relative z-10 pt-4 border-t border-slate-800 text-center text-xs text-slate-500">
-        3 Strategic Lanes · Outpost Capture · Multiverse Synergy · Airborne Drops
+        สมรภูมิ 3 เลนยุทธศาสตร์ · ยึดครองจุดยุทธศาสตร์ · พหุภพไร้ขอบเขต · ส่งกำลังพลร่มทางอากาศ
       </footer>
     </div>
   );

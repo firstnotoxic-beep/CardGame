@@ -49,11 +49,15 @@ import {
   ChevronUp,
   ChevronDown,
   Sparkles,
+  Timer,
 } from 'lucide-react';
 
 export default function App() {
   // Navigation Screens
   const [screen, setScreen] = useState<'lobby' | 'battle' | 'deckbuilder' | 'creator'>('lobby');
+
+  // Turn Timer state (60 seconds limit for deployment and movement phases)
+  const [turnTimeLeft, setTurnTimeLeft] = useState<number>(60);
 
   // Decks & Custom Cards Persistence
   const [customCards, setCustomCards] = useState<CardDefinition[]>(() => {
@@ -116,15 +120,49 @@ export default function App() {
   const [selectedAirbase, setSelectedAirbase] = useState<StructureInstance | null>(null);
   const [isAiThinking, setIsAiThinking] = useState<boolean>(false);
 
-  // Elo Tier Calculation
+  // Elo Tier Calculation in Thai
   const getUserRankTitle = (elo: number) => {
-    if (elo >= 1800) return 'Eternal';
-    if (elo >= 1600) return 'World Architect';
-    if (elo >= 1400) return 'Nexus Master';
-    if (elo >= 1200) return 'Rift Adept';
-    if (elo >= 1000) return 'Striker';
-    return 'Recruit';
+    if (elo >= 1800) return 'ยอดฝีมือสูงสุด (Eternal)';
+    if (elo >= 1600) return 'สถาปนิกมิติ (World Architect)';
+    if (elo >= 1400) return 'ปรมาจารย์เน็กซัส (Nexus Master)';
+    if (elo >= 1200) return 'ผู้ช่ำชองริฟต์ (Rift Adept)';
+    if (elo >= 1000) return 'กองหน้าจู่โจม (Striker)';
+    return 'ทหารเกณฑ์ใหม่ (Recruit)';
   };
+
+  // Turn Timer Countdown: 60 seconds limit for deployment & movement phases
+  useEffect(() => {
+    if (!gameState || gameState.winner || isAiThinking) return;
+
+    // Only tick down during deployment or movement phases
+    if (gameState.phase !== 'deployment' && gameState.phase !== 'movement') {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTurnTimeLeft((prev) => {
+        if (prev <= 1) {
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [gameState?.phase, gameState?.turn, gameState?.activePlayerId, gameState?.winner, isAiThinking]);
+
+  // When timer reaches 0 during deployment or movement phases, auto-trigger End Turn
+  useEffect(() => {
+    if (
+      gameState &&
+      !gameState.winner &&
+      !isAiThinking &&
+      turnTimeLeft === 0 &&
+      (gameState.phase === 'deployment' || gameState.phase === 'movement')
+    ) {
+      handleForceEndTurn();
+    }
+  }, [turnTimeLeft]);
 
   // Save to localStorage when state changes
   useEffect(() => {
@@ -264,7 +302,7 @@ export default function App() {
 
     const initialP1: PlayerState = {
       id: 'player1',
-      name: 'Player 1 (Architect)',
+      name: 'ผู้เล่น 1 (สถาปนิก)',
       isAI: false,
       baseHealth: 30,
       maxBaseHealth: 30,
@@ -285,7 +323,7 @@ export default function App() {
 
     const initialP2: PlayerState = {
       id: 'player2',
-      name: mode === 'hotseat' ? 'Player 2 (Architect)' : 'Architect AI Alpha',
+      name: mode === 'hotseat' ? 'ผู้เล่น 2 (สถาปนิก)' : 'สถาปนิก AI อัลฟ่า',
       isAI: mode === 'ai-skirmish' || mode === 'airborne-scenario',
       baseHealth: 30,
       maxBaseHealth: 30,
@@ -301,7 +339,7 @@ export default function App() {
       partner: partner2,
       origin: origin2,
       elo: 1220,
-      rankTitle: 'Rift Adept',
+      rankTitle: 'ผู้ช่ำชองริฟต์ (Rift Adept)',
     };
 
     const newGameState: GameState = {
@@ -324,7 +362,7 @@ export default function App() {
       airborneLandingCellIds: [],
       actionMode: 'idle',
       combatLog: [
-        `[MATCH START] Sector engaged! Mode: ${mode.toUpperCase()}. Control Outposts in Row 3 to harvest resources.`,
+        `[เริ่มการรบ] เริ่มต้นปฏิบัติการในสมรภูมิ! โหมด: ${mode.toUpperCase()} เข้ายึดครองฐานยุทธศาสตร์แถวที่ 3 เพื่อเก็บเกี่ยวพลังงานและครองความได้เปรียบ`,
       ],
       winner: null,
       mode,
@@ -333,10 +371,106 @@ export default function App() {
 
     setGameState(newGameState);
     setSelectedAirbase(null);
+    setTurnTimeLeft(60);
     setScreen('battle');
   };
 
-  // Handle phase advance or End Turn
+  // Automatically trigger End Turn when 60-second timer expires during deployment/movement
+  const handleForceEndTurn = () => {
+    if (!gameState || gameState.winner || isAiThinking) return;
+
+    soundFx.playPhaseChange();
+    let current = JSON.parse(JSON.stringify(gameState)) as GameState;
+
+    // Reset selection highlights
+    current.selectedCellId = null;
+    current.selectedCardInstanceId = null;
+    current.selectedUnitId = null;
+    current.selectedStructureId = null;
+    current.reachableCellIds = [];
+    current.attackableCellIds = [];
+    current.airborneLandingCellIds = [];
+    current.actionMode = 'idle';
+    setSelectedAirbase(null);
+
+    const timedOutPlayerName =
+      current.activePlayerId === 'player1' ? current.player1.name : current.player2.name;
+    current.combatLog.unshift(
+      `[หมดเวลา 60 วินาที] หมดเวลาสำหรับ ${timedOutPlayerName} — ระบบทำการส่งเทิร์นและสรุปผลอัตโนมัติ`
+    );
+
+    // Auto-resolve outpost captures on forced end
+    current = resolveOutpostCaptures(current);
+
+    // Switch active player
+    const nextPlayerId = current.activePlayerId === 'player1' ? 'player2' : 'player1';
+    current.activePlayerId = nextPlayerId;
+    if (nextPlayerId === 'player1') {
+      current.turn += 1;
+    }
+
+    // Start Phase & Economy Phase for new active player
+    current = resolveEconomyIncome(current, nextPlayerId);
+
+    // Draw 1 card for new active player
+    const activeP = nextPlayerId === 'player1' ? current.player1 : current.player2;
+    if (activeP.deck.length > 0 && activeP.hand.length < 7) {
+      const drawn = activeP.deck.shift()!;
+      activeP.hand.push(drawn);
+      current.combatLog.unshift(`[จั่วการ์ด] ${activeP.name} ได้รับการ์ดยุทธวิธีใหม่ 1 ใบ`);
+    }
+
+    // Reset unit actions
+    Object.values(current.units).forEach((u) => {
+      if (u.owner === nextPlayerId) {
+        u.hasMovedThisTurn = false;
+        u.hasAttackedThisTurn = false;
+        u.movePoints = u.maxMove;
+      }
+    });
+
+    current.phase = 'deployment';
+    setTurnTimeLeft(60);
+
+    // Check if next player is AI
+    if (activeP.isAI) {
+      setGameState(current);
+      setIsAiThinking(true);
+      setTimeout(() => {
+        let aiResolved = runAITurn(current);
+        aiResolved = resolveOutpostCaptures(aiResolved);
+
+        aiResolved.activePlayerId = 'player1';
+        aiResolved.turn += 1;
+        aiResolved = resolveEconomyIncome(aiResolved, 'player1');
+
+        if (aiResolved.player1.deck.length > 0 && aiResolved.player1.hand.length < 7) {
+          const drawn = aiResolved.player1.deck.shift()!;
+          aiResolved.player1.hand.push(drawn);
+        }
+
+        Object.values(aiResolved.units).forEach((u) => {
+          if (u.owner === 'player1') {
+            u.hasMovedThisTurn = false;
+            u.hasAttackedThisTurn = false;
+            u.movePoints = u.maxMove;
+          }
+        });
+
+        aiResolved.phase = 'deployment';
+        aiResolved.combatLog.unshift(`[เทิร์น ${aiResolved.turn}] ผู้เล่น 1 เริ่มต้นเทิร์นใหม่`);
+        setGameState(aiResolved);
+        setIsAiThinking(false);
+        setTurnTimeLeft(60);
+        soundFx.playDeploy();
+      }, 900);
+      return;
+    }
+
+    setGameState(current);
+  };
+
+  // Handle phase advance or End Turn manually
   const handleNextPhase = () => {
     if (!gameState || gameState.winner || isAiThinking) return;
 
@@ -360,6 +494,7 @@ export default function App() {
     if (currentPhaseIdx < phases.length - 2) {
       // Step to next phase within same turn
       current.phase = phases[currentPhaseIdx + 1];
+      setTurnTimeLeft(60);
     } else {
       // End of turn reached! Run Capture Phase and End Phase resolution
       current = resolveOutpostCaptures(current);
@@ -379,7 +514,7 @@ export default function App() {
       if (activeP.deck.length > 0 && activeP.hand.length < 7) {
         const drawn = activeP.deck.shift()!;
         activeP.hand.push(drawn);
-        current.combatLog.unshift(`[DRAW] ${activeP.name} drew a tactical card.`);
+        current.combatLog.unshift(`[จั่วการ์ด] ${activeP.name} ได้รับการ์ดยุทธวิธีใหม่ 1 ใบ`);
       }
 
       // Reset unit action flags for new active player's units
@@ -392,7 +527,8 @@ export default function App() {
       });
 
       current.phase = 'deployment';
-      current.combatLog.unshift(`[TURN ${current.turn}] ${activeP.name}'s turn has begun.`);
+      current.combatLog.unshift(`[เทิร์น ${current.turn}] เทิร์นของ ${activeP.name} เริ่มต้นขึ้นแล้ว`);
+      setTurnTimeLeft(60);
 
       // Check if next player is AI
       if (activeP.isAI) {
@@ -421,9 +557,10 @@ export default function App() {
           });
 
           aiResolved.phase = 'deployment';
-          aiResolved.combatLog.unshift(`[TURN ${aiResolved.turn}] Player 1's turn has begun.`);
+          aiResolved.combatLog.unshift(`[เทิร์น ${aiResolved.turn}] ผู้เล่น 1 เริ่มต้นเทิร์นใหม่`);
           setGameState(aiResolved);
           setIsAiThinking(false);
+          setTurnTimeLeft(60);
           soundFx.playDeploy();
         }, 900);
         return;
@@ -831,29 +968,68 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen w-full bg-slate-950 text-slate-100 select-none overflow-x-hidden">
-      {/* 1. TOP STATUS BAR */}
-      <header className="flex items-center justify-between px-4 py-2.5 bg-slate-900 border-b border-slate-800 z-20">
+      {/* 1. แถบสถานะส่วนบนและตัวจับเวลาเทิร์น (TOP STATUS BAR & TURN TIMER) */}
+      <header className="flex items-center justify-between px-4 py-2.5 bg-slate-900 border-b border-slate-800 z-20 flex-wrap gap-2">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setScreen('lobby')}
             className="text-xs font-bold text-slate-400 hover:text-cyan-300 transition-colors uppercase tracking-wider"
           >
-            ← Leave Sector
+            ← ออกจากสมรภูมิ
           </button>
           <span className="text-slate-600">|</span>
           <div className="flex items-center gap-2">
             <span className="font-display font-black text-sm text-cyan-400">
-              TURN {gameState.turn}
+              เทิร์น {gameState.turn}
             </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-950 text-indigo-300 border border-indigo-700/50">
-              {gameState.phase.toUpperCase()} PHASE
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-950 text-indigo-300 border border-indigo-700/50">
+              {gameState.phase === 'deployment'
+                ? 'เฟสจัดวางกำลัง'
+                : gameState.phase === 'movement'
+                ? 'เฟสเคลื่อนพล'
+                : gameState.phase === 'combat'
+                ? 'เฟสประจัญบาน'
+                : gameState.phase === 'capture'
+                ? 'เฟสยึดครอง'
+                : 'จบเทิร์น'}
+            </span>
+          </div>
+
+          {/* TURN TIMER BADGE (60s countdown for deployment & movement phases) */}
+          <div
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-mono-nums text-xs font-bold transition-all ${
+              gameState.phase !== 'deployment' && gameState.phase !== 'movement'
+                ? 'bg-slate-800/60 border-slate-700/60 text-slate-400'
+                : turnTimeLeft <= 10
+                ? 'bg-rose-950/90 border-rose-600 text-rose-300 animate-pulse shadow-md shadow-rose-950/80 ring-1 ring-rose-500'
+                : turnTimeLeft <= 20
+                ? 'bg-amber-950/70 border-amber-600 text-amber-300'
+                : 'bg-cyan-950/60 border-cyan-700 text-cyan-300'
+            }`}
+            title="ตัวจับเวลาเฟสจัดวางกำลังและเคลื่อนพล (จำกัด 60 วินาที ระบบจะจบเทิร์นอัตโนมัติเมื่อหมดเวลา)"
+          >
+            <Timer
+              className={`w-3.5 h-3.5 ${
+                turnTimeLeft <= 10 &&
+                (gameState.phase === 'deployment' || gameState.phase === 'movement')
+                  ? 'text-rose-400 animate-spin'
+                  : 'text-cyan-400'
+              }`}
+            />
+            <span className="text-[10px] uppercase tracking-wider text-slate-400 font-sans hidden sm:inline">
+              เวลาคงเหลือ:
+            </span>
+            <span className="tracking-wider">
+              {gameState.phase === 'deployment' || gameState.phase === 'movement'
+                ? `00:${turnTimeLeft < 10 ? `0${turnTimeLeft}` : turnTimeLeft}`
+                : '--:--'}
             </span>
           </div>
         </div>
 
         {/* Center: Turn Ownership & AI Status */}
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-slate-400">Active Commander:</span>
+          <span className="text-slate-400">ผู้บัญชาการ:</span>
           <span
             className={`font-bold ${
               gameState.activePlayerId === 'player1' ? 'text-sky-400' : 'text-rose-400'
@@ -863,7 +1039,7 @@ export default function App() {
           </span>
           {isAiThinking && (
             <span className="text-amber-400 font-semibold animate-pulse text-xs">
-              (AI Calculating Tactics...)
+              (AI กำลังคำนวณกลยุทธ์...)
             </span>
           )}
         </div>
@@ -876,7 +1052,7 @@ export default function App() {
               setIsMuted(muted);
             }}
             className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300"
-            title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+            title={isMuted ? 'เปิดเสียงเอฟเฟกต์' : 'ปิดเสียง'}
           >
             {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-cyan-400" />}
           </button>
@@ -885,14 +1061,14 @@ export default function App() {
             onClick={() => setShowRulesModal(true)}
             className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-semibold"
           >
-            Manual
+            คู่มือรบ
           </button>
 
           <button
             onClick={() => setShowSurrenderDialog(true)}
             className="px-2.5 py-1 rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs font-bold border border-rose-800/40"
           >
-            Concede
+            ยอมแพ้
           </button>
         </div>
       </header>
@@ -917,17 +1093,17 @@ export default function App() {
           <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 shadow-xl">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Resource Reserve
+                คลังทรัพยากรพลังงาน
               </span>
               <span className="text-[10px] text-slate-500 font-mono-nums">
-                Income: Outpost Controlled
+                รายได้: ฐานยุทธศาสตร์ที่ควบคุม
               </span>
             </div>
 
             <div className="grid grid-cols-3 gap-2 text-center font-mono-nums">
               <div className="p-2 rounded-lg bg-amber-950/30 border border-amber-800/40">
                 <div className="text-[10px] uppercase font-bold text-amber-400 flex items-center justify-center gap-1">
-                  <Zap className="w-3 h-3" /> Charge
+                  <Zap className="w-3 h-3" /> ประจุไฟฟ้า
                 </div>
                 <div className="text-base font-bold text-amber-300 mt-0.5">
                   {activeP?.resources.charge} / {activeP?.resources.maxCharge}
@@ -936,7 +1112,7 @@ export default function App() {
 
               <div className="p-2 rounded-lg bg-purple-950/30 border border-purple-800/40">
                 <div className="text-[10px] uppercase font-bold text-purple-400 flex items-center justify-center gap-1">
-                  <Radio className="w-3 h-3" /> Rift
+                  <Radio className="w-3 h-3" /> พลังริฟต์
                 </div>
                 <div className="text-base font-bold text-purple-300 mt-0.5">
                   {activeP?.resources.rift}
@@ -945,7 +1121,7 @@ export default function App() {
 
               <div className="p-2 rounded-lg bg-sky-950/30 border border-sky-800/40">
                 <div className="text-[10px] uppercase font-bold text-sky-400 flex items-center justify-center gap-1">
-                  <Shield className="w-3 h-3" /> Resolve
+                  <Shield className="w-3 h-3" /> มุ่งมั่น
                 </div>
                 <div className="text-base font-bold text-sky-300 mt-0.5">
                   {activeP?.resources.resolve}
@@ -962,7 +1138,7 @@ export default function App() {
               </div>
             ) : (
               <div className="text-center p-6 text-slate-500 text-xs italic">
-                Select a card in your hand to preview deployment, or click a unit on the field to command movement and combat attacks.
+                เลือกการ์ดในมือเพื่อดูตัวอย่างการจัดวางกำลัง หรือคลิกยูนิตในสนามเพื่อออกคำสั่งเดินทัพและโจมตี
               </div>
             )}
           </div>
@@ -979,25 +1155,25 @@ export default function App() {
           >
             <span>
               {gameState.phase === 'deployment'
-                ? 'Advance to Movement Phase'
+                ? 'ก้าวสู่เฟสเคลื่อนพล'
                 : gameState.phase === 'movement'
-                ? 'Advance to Combat Phase'
+                ? 'ก้าวสู่เฟสประจัญบาน'
                 : gameState.phase === 'combat'
-                ? 'Advance to Capture Phase'
-                : 'Conclude & End Turn'}
+                ? 'ก้าวสู่เฟสยึดครอง'
+                : 'สรุปผลและจบเทิร์น'}
             </span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* 3. BOTTOM HAND CAROUSEL DOCK */}
+      {/* 3. แถบการ์ดบนมือ (BOTTOM HAND CAROUSEL DOCK) */}
       <div className="sticky bottom-0 z-20 w-full bg-slate-950/95 border-t border-slate-800 p-2.5 backdrop-blur-md">
         <div className="flex items-center justify-between max-w-7xl mx-auto gap-3">
           <div className="text-xs font-bold text-slate-400 shrink-0 hidden sm:block">
-            <span>Hand ({activeP?.hand.length || 0})</span>
+            <span>การ์ดบนมือ ({activeP?.hand.length || 0})</span>
             <div className="text-[10px] text-slate-500">
-              Deck: {activeP?.deck.length || 0} cards
+              กองการ์ด: {activeP?.deck.length || 0} ใบ
             </div>
           </div>
 
@@ -1028,7 +1204,7 @@ export default function App() {
             onClick={() => setShowCombatLog(!showCombatLog)}
             className="flex items-center gap-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-300 font-semibold shrink-0"
           >
-            <span>Log</span>
+            <span>บันทึกรบ</span>
             {showCombatLog ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
           </button>
         </div>
@@ -1038,7 +1214,7 @@ export default function App() {
       {showCombatLog && (
         <div className="fixed bottom-24 right-4 z-40 max-w-md w-full bg-slate-950 border border-slate-800 rounded-xl p-3 shadow-2xl max-h-60 overflow-y-auto font-mono-nums text-xs">
           <div className="flex items-center justify-between pb-1.5 border-b border-slate-800 mb-2">
-            <span className="font-bold text-slate-300">Tactical Engagement Log</span>
+            <span className="font-bold text-slate-300">บันทึกการปะทะทางยุทธวิธี</span>
             <button onClick={() => setShowCombatLog(false)} className="text-slate-500 hover:text-slate-300">
               ✕
             </button>
@@ -1058,22 +1234,22 @@ export default function App() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-slate-900 border border-rose-900/60 rounded-xl p-5 max-w-sm w-full text-center">
             <AlertOctagon className="w-10 h-10 text-rose-500 mx-auto mb-2" />
-            <h3 className="text-sm font-bold text-slate-100">Concede Sector?</h3>
+            <h3 className="text-sm font-bold text-slate-100">ต้องการยอมจำนนหรือไม่?</h3>
             <p className="text-xs text-slate-400 mt-1">
-              Surrendering will forfeit the match and grant victory to the opponent.
+              การยอมแพ้จะถือว่าสิ้นสุดการรบทันที และส่งผลให้ฝ่ายตรงข้ามเป็นผู้ชนะ
             </p>
             <div className="flex justify-center gap-2 mt-4">
               <button
                 onClick={() => setShowSurrenderDialog(false)}
                 className="px-4 py-1.5 rounded-lg bg-slate-800 text-xs text-slate-300"
               >
-                Continue Battle
+                สู้รบต่อไป
               </button>
               <button
                 onClick={handleSurrender}
                 className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white"
               >
-                Confirm Concede
+                ยืนยันการยอมแพ้
               </button>
             </div>
           </div>
@@ -1089,21 +1265,21 @@ export default function App() {
                 gameState.winner === 'player1' ? 'text-cyan-400' : 'text-rose-500'
               }`}
             >
-              {gameState.winner === 'player1' ? 'SECTOR SECURED' : 'SECTOR OVERRUN'}
+              {gameState.winner === 'player1' ? 'ยึดครองสมรภูมิสำเร็จ!' : 'แนวรบถูกตีแตกพ่าย!'}
             </div>
             <div className="text-sm text-slate-300 font-semibold mb-4">
-              {gameState.winReason || (gameState.winner === 'player1' ? 'Victory Achieved!' : 'Defeat')}
+              {gameState.winReason || (gameState.winner === 'player1' ? 'คว้าชัยชนะอย่างเด็ดขาด!' : 'พ่ายแพ้ในการรบ')}
             </div>
 
             <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-1 mb-5">
               <div className="flex justify-between text-slate-400">
-                <span>Rating Update:</span>
+                <span>อัปเดตระดับคะแนน:</span>
                 <span className="font-mono-nums font-bold text-amber-300">
                   {userElo} ELO ({gameState.winner === 'player1' ? '+25' : '-18'})
                 </span>
               </div>
               <div className="flex justify-between text-slate-400">
-                <span>Final Turn:</span>
+                <span>เทิร์นสุดท้าย:</span>
                 <span className="font-mono-nums text-slate-200">{gameState.turn}</span>
               </div>
             </div>
@@ -1113,13 +1289,13 @@ export default function App() {
                 onClick={() => setScreen('lobby')}
                 className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200"
               >
-                Return to Lobby
+                กลับสู่ล็อบบี้
               </button>
               <button
                 onClick={() => startMatch(gameState.mode, 'map-forest-frontier')}
                 className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-600 hover:from-cyan-400 hover:to-sky-500 text-xs font-bold text-slate-950 shadow-lg shadow-cyan-950/40"
               >
-                Play Rematch
+                เล่นนัดล้างตา
               </button>
             </div>
           </div>

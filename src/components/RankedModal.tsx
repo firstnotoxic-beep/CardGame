@@ -16,12 +16,12 @@ interface RankedModalProps {
 }
 
 const RANK_TIERS = [
-  { name: 'Eternal', minElo: 1800, color: 'text-amber-300', bg: 'bg-amber-950/40 border-amber-600/50' },
-  { name: 'World Architect', minElo: 1600, color: 'text-purple-300', bg: 'bg-purple-950/40 border-purple-600/50' },
-  { name: 'Nexus Master', minElo: 1400, color: 'text-rose-300', bg: 'bg-rose-950/40 border-rose-600/50' },
-  { name: 'Rift Adept', minElo: 1200, color: 'text-cyan-300', bg: 'bg-cyan-950/40 border-cyan-600/50' },
-  { name: 'Striker', minElo: 1000, color: 'text-emerald-300', bg: 'bg-emerald-950/40 border-emerald-600/50' },
-  { name: 'Recruit', minElo: 0, color: 'text-slate-300', bg: 'bg-slate-900 border-slate-700' },
+  { name: 'ยอดฝีมือสูงสุด (Eternal)', minElo: 1800, color: 'text-amber-300', bg: 'bg-amber-950/40 border-amber-600/50' },
+  { name: 'สถาปนิกมิติ (World Architect)', minElo: 1600, color: 'text-purple-300', bg: 'bg-purple-950/40 border-purple-600/50' },
+  { name: 'ปรมาจารย์เน็กซัส (Nexus Master)', minElo: 1400, color: 'text-rose-300', bg: 'bg-rose-950/40 border-rose-600/50' },
+  { name: 'ผู้ช่ำชองริฟต์ (Rift Adept)', minElo: 1200, color: 'text-cyan-300', bg: 'bg-cyan-950/40 border-cyan-600/50' },
+  { name: 'กองหน้าจู่โจม (Striker)', minElo: 1000, color: 'text-emerald-300', bg: 'bg-emerald-950/40 border-emerald-600/50' },
+  { name: 'ทหารเกณฑ์ใหม่ (Recruit)', minElo: 0, color: 'text-slate-300', bg: 'bg-slate-900 border-slate-700' },
 ];
 
 export const RankedModal: React.FC<RankedModalProps> = ({
@@ -39,10 +39,10 @@ export const RankedModal: React.FC<RankedModalProps> = ({
             <Trophy className="w-6 h-6 text-amber-400" />
             <div>
               <h2 className="font-display font-bold text-lg text-slate-100">
-                Nexus Ranked Architecture
+                สถาปัตยกรรมจัดอันดับเน็กซัส (Nexus Ranked Architecture)
               </h2>
               <div className="text-xs text-slate-400">
-                Official competitive ladder and matchmaking divisions
+                ระบบบันไดการแข่งขันและระดับดิวิชันอย่างเป็นทางการ
               </div>
             </div>
           </div>
@@ -58,26 +58,26 @@ export const RankedModal: React.FC<RankedModalProps> = ({
         <div className="p-4 rounded-xl bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-indigo-900/50 flex items-center justify-between mb-4">
           <div>
             <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-              Current Division
+              ดิวิชันปัจจุบัน
             </div>
             <div className="text-xl font-display font-black text-amber-300 tracking-wide mt-0.5">
               {userRank}
             </div>
             <div className="text-xs font-mono-nums text-slate-300 mt-1">
-              Rating: <span className="font-bold text-cyan-400">{userElo} ELO</span>
+              คะแนนอันดับ: <span className="font-bold text-cyan-400">{userElo} ELO</span>
             </div>
           </div>
 
           <div className="text-right">
             <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-              Career Record
+              สถิติการรบตลอดกาล
             </div>
             <div className="text-sm font-mono-nums font-bold text-emerald-400">
-              {matchHistory.filter((m) => m.result === 'Victory').length}W -{' '}
-              {matchHistory.filter((m) => m.result === 'Defeat').length}L
+              {matchHistory.filter((m) => m.result === 'Victory').length} ชนะ -{' '}
+              {matchHistory.filter((m) => m.result === 'Defeat').length} แพ้
             </div>
             <div className="text-[11px] text-slate-400">
-              Winrate:{' '}
+              อัตราการชนะ:{' '}
               {matchHistory.length > 0
                 ? Math.round(
                     (matchHistory.filter((m) => m.result === 'Victory').length /
@@ -93,11 +93,11 @@ export const RankedModal: React.FC<RankedModalProps> = ({
         {/* Divisions Ladder List */}
         <div className="mb-4">
           <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-            Division Thresholds
+            เกณฑ์คะแนนดิวิชัน
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {RANK_TIERS.map((tier) => {
-              const isCurrent = userRank === tier.name;
+              const isCurrent = userRank.includes(tier.name) || tier.name.includes(userRank);
               return (
                 <div
                   key={tier.name}
@@ -118,11 +118,11 @@ export const RankedModal: React.FC<RankedModalProps> = ({
         {/* Match History */}
         <div className="flex-1 overflow-y-auto pr-1">
           <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-            Recent Engagements
+            ประวัติการปะทะล่าสุด
           </div>
           {matchHistory.length === 0 ? (
             <div className="text-center py-6 text-xs text-slate-500 italic">
-              No ranked engagements recorded yet. Deploy to the battlefield to earn rating!
+              ยังไม่มีประวัติการปะทะจัดอันดับ เข้าร่วมสมรภูมิเพื่อสะสมคะแนนอันดับ!
             </div>
           ) : (
             <div className="space-y-1.5">
@@ -133,7 +133,7 @@ export const RankedModal: React.FC<RankedModalProps> = ({
                 >
                   <div>
                     <div className="font-semibold text-slate-200">
-                      vs. {m.opponent}
+                      ประจัญบานกับ {m.opponent}
                     </div>
                     <div className="text-[10px] text-slate-400">
                       {m.laneWinner} · {m.date}
@@ -145,7 +145,7 @@ export const RankedModal: React.FC<RankedModalProps> = ({
                         m.result === 'Victory' ? 'text-emerald-400' : 'text-rose-400'
                       }`}
                     >
-                      {m.result} ({m.eloDelta > 0 ? `+${m.eloDelta}` : m.eloDelta})
+                      {m.result === 'Victory' ? 'ชนะ' : 'แพ้'} ({m.eloDelta > 0 ? `+${m.eloDelta}` : m.eloDelta})
                     </span>
                   </div>
                 </div>

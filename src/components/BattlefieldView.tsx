@@ -40,7 +40,7 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
           </div>
           <div>
             <div className="text-xs font-bold text-rose-300 uppercase tracking-wider">
-              {state.player2.name} · Hostile Nexus
+              {state.player2.name} · เน็กซัสฝ่ายตรงข้าม
             </div>
             <div className="text-[11px] text-slate-400">
               {state.player2.partner.name}
@@ -52,7 +52,7 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
         <div className="flex items-center gap-3">
           <div className="text-right">
             <div className="text-[10px] uppercase font-bold text-rose-400 tracking-wider">
-              Nexus Integrity
+              ความสมบูรณ์เน็กซัส (Nexus Integrity)
             </div>
             <div className="text-sm font-mono-nums font-bold text-slate-200">
               {state.player2.baseHealth} / {state.player2.maxBaseHealth} HP
@@ -72,13 +72,13 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
       {/* LANE TITLES */}
       <div className="relative z-10 grid grid-cols-3 gap-3 w-full mb-2 text-center text-xs font-semibold tracking-wider uppercase text-slate-400">
         <div className="py-1 rounded bg-slate-900/60 border border-slate-800 flex items-center justify-center gap-1.5 text-amber-400">
-          <Zap className="w-3.5 h-3.5" /> Left Lane · Supply
+          <Zap className="w-3.5 h-3.5" /> เลนซ้าย · เสบียงส่งกำลังบำรุง
         </div>
         <div className="py-1 rounded bg-slate-900/60 border border-slate-800 flex items-center justify-center gap-1.5 text-sky-400">
-          <Castle className="w-3.5 h-3.5" /> Center Lane · Fortress
+          <Castle className="w-3.5 h-3.5" /> เลนกลาง · ป้อมปราการมั่นคง
         </div>
         <div className="py-1 rounded bg-slate-900/60 border border-slate-800 flex items-center justify-center gap-1.5 text-purple-400">
-          <Radio className="w-3.5 h-3.5" /> Right Lane · Relay
+          <Radio className="w-3.5 h-3.5" /> เลนขวา · รีเลย์มิติริฟต์
         </div>
       </div>
 
@@ -131,23 +131,23 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
                   <div className="flex items-center justify-between text-[10px] font-mono-nums text-slate-400">
                     <span className="text-[9px] text-slate-500 uppercase">
                       {row === 0
-                        ? 'OPP BASE'
+                        ? 'ฐานศัตรู'
                         : row === 1
-                        ? 'OPP REAR'
+                        ? 'แนวหลังศัตรู'
                         : row === 2
-                        ? 'OPP MID'
+                        ? 'แนวกลางศัตรู'
                         : row === 3
-                        ? 'FRONTLINE'
+                        ? 'แนวรบหน้า'
                         : row === 4
-                        ? 'PLR MID'
+                        ? 'แนวกลางเรา'
                         : row === 5
-                        ? 'PLR REAR'
-                        : 'PLR BASE'}
+                        ? 'แนวหลังเรา'
+                        : 'ฐานเรา'}
                     </span>
 
                     {/* Cover Bonus */}
                     {cell.coverBonus > 0 ? (
-                      <span className="flex items-center gap-0.5 text-emerald-400" title={`Cover: +${cell.coverBonus} Defense`}>
+                      <span className="flex items-center gap-0.5 text-emerald-400" title={`ที่กำบัง: +${cell.coverBonus} Defense`}>
                         <Shield className="w-2.5 h-2.5" /> +{cell.coverBonus}
                       </span>
                     ) : null}
@@ -155,15 +155,15 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
                     {/* Targeting Indicators */}
                     {isAttackable ? (
                       <span className="text-rose-400 font-bold flex items-center gap-0.5 uppercase tracking-wider text-[9px]">
-                        <Crosshair className="w-3 h-3" /> Target
+                        <Crosshair className="w-3 h-3" /> โจมตี
                       </span>
                     ) : isAirborneTarget ? (
                       <span className="text-amber-300 font-bold flex items-center gap-0.5 uppercase tracking-wider text-[9px]">
-                        <Plane className="w-3 h-3" /> Drop Zone
+                        <Plane className="w-3 h-3" /> จุดทิ้งร่ม
                       </span>
                     ) : isReachable ? (
                       <span className="text-cyan-300 font-bold flex items-center gap-0.5 uppercase tracking-wider text-[9px]">
-                        <Navigation className="w-3 h-3" /> Move
+                        <Navigation className="w-3 h-3" /> เดินพล
                       </span>
                     ) : null}
                   </div>
@@ -185,7 +185,7 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
                             {unit.name}
                           </span>
                           {unit.canCapture ? (
-                            <span title="Outpost Capturer" className="shrink-0">
+                            <span title="สามารถยึดจุดยุทธศาสตร์ได้" className="shrink-0">
                               <Flag className="w-3 h-3 text-amber-400" />
                             </span>
                           ) : null}
@@ -214,7 +214,7 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
                           <span className="flex items-center gap-0.5 text-sky-300">
                             <Shield className="w-2.5 h-2.5" /> {unit.defense}
                           </span>
-                          <span className="flex items-center gap-0.5 text-amber-300" title="Movement remaining">
+                          <span className="flex items-center gap-0.5 text-amber-300" title="การเดินที่เหลือ">
                             <Navigation className="w-2.5 h-2.5" /> {unit.hasMovedThisTurn ? 0 : unit.movePoints}
                           </span>
                         </div>
@@ -247,11 +247,11 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
                                 : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                             }`}
                           >
-                            <Plane className="w-3 h-3" /> Airborne Drop (3⚡+1🌀)
+                            <Plane className="w-3 h-3" /> ทิ้งร่มทางอากาศ (3⚡+1🌀)
                           </button>
                         ) : (
                           <div className="text-[9px] text-slate-400 italic">
-                            Defensive Structure
+                            สิ่งปลูกสร้างป้องกัน
                           </div>
                         )}
                       </div>
@@ -269,15 +269,15 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
                             }`}
                           >
                             {outpost.owner === 'player1'
-                              ? 'CONTROLLED'
+                              ? 'ยึดครองแล้ว'
                               : outpost.owner === 'player2'
-                              ? 'ENEMY HELD'
-                              : 'NEUTRAL'}
+                              ? 'ศัตรูยึดครอง'
+                              : 'เป็นกลาง'}
                           </span>
 
                           {outpost.isContested ? (
                             <span className="flex items-center gap-0.5 text-amber-400 text-[9px] font-bold animate-pulse">
-                              <AlertTriangle className="w-2.5 h-2.5" /> Contested
+                              <AlertTriangle className="w-2.5 h-2.5" /> ช่วงชิง
                             </span>
                           ) : null}
                         </div>
@@ -300,10 +300,10 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
 
                         <div className="text-[9px] text-slate-400 leading-tight">
                           {outpost.type === 'supply'
-                            ? '+1 Charge/rnd'
+                            ? '+1 Charge/รอบ'
                             : outpost.type === 'fortress'
-                            ? '+2 Defense aura'
-                            : '+1 Rift energy'}
+                            ? '+2 Defense ออร่า'
+                            : '+1 Rift/รอบ'}
                         </div>
                       </div>
                     ) : (
@@ -327,7 +327,7 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
           </div>
           <div>
             <div className="text-xs font-bold text-sky-300 uppercase tracking-wider">
-              {state.player1.name} · Friendly Nexus
+              {state.player1.name} · เน็กซัสฝ่ายเรา
             </div>
             <div className="text-[11px] text-slate-400">
               {state.player1.partner.name}
@@ -339,7 +339,7 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
         <div className="flex items-center gap-3">
           <div className="text-right">
             <div className="text-[10px] uppercase font-bold text-sky-400 tracking-wider">
-              Nexus Integrity
+              ความสมบูรณ์เน็กซัส (Nexus Integrity)
             </div>
             <div className="text-sm font-mono-nums font-bold text-slate-200">
               {state.player1.baseHealth} / {state.player1.maxBaseHealth} HP

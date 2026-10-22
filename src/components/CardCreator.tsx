@@ -12,48 +12,48 @@ interface CardCreatorProps {
 const ABILITY_TEMPLATES = [
   {
     id: 'ab-deal-damage',
-    name: 'Kinetic Strike',
-    description: 'Deal 3 damage to an enemy unit in range on deployment.',
+    name: 'โจมตีพลังจลน์ (Kinetic Strike)',
+    description: 'สร้างความเสียหาย 3 หน่วยแก่ยูนิตศัตรูในระยะเมื่อลงสู่สนาม',
     actionType: 'deal-damage' as const,
     powerValue: 3,
     weight: 2,
   },
   {
     id: 'ab-heal-allies',
-    name: 'Field Medic Surge',
-    description: 'Heal an adjacent friendly unit by +3 Health.',
+    name: 'แพทย์สนามฉุกเฉิน (Field Medic Surge)',
+    description: 'ฟื้นฟูเลือด +3 หน่วยให้ยูนิตฝ่ายเราในช่องติดกัน',
     actionType: 'heal' as const,
     powerValue: 3,
     weight: 1.5,
   },
   {
     id: 'ab-shield-matrix',
-    name: 'Barrier Shield',
-    description: 'Grant +3 temporary Shield against the next incoming attack.',
+    name: 'บาเรียเกราะป้องกัน (Barrier Shield)',
+    description: 'มอบเกราะชั่วคราว +3 หน่วยต้านทานการโจมตีถัดไป',
     actionType: 'shield' as const,
     powerValue: 3,
     weight: 1.5,
   },
   {
     id: 'ab-airborne-drop',
-    name: 'Orbital Drop',
-    description: 'May deploy directly to any Outpost cell or rear corridor.',
+    name: 'ทิ้งร่มทางยุทธวิธี (Orbital Drop)',
+    description: 'สามารถจัดวางลงบนฐานยุทธศาสตร์หรือแนวหลังได้โดยตรง',
     actionType: 'airborne-drop' as const,
     powerValue: 4,
     weight: 3,
   },
   {
     id: 'ab-gain-charge',
-    name: 'Overdrive Siphon',
-    description: 'Generate +1 Charge when eliminating a hostile unit.',
+    name: 'สูบพลังโอเวอร์ไดรฟ์ (Overdrive Siphon)',
+    description: 'ได้รับประจุไฟฟ้า +1 Charge เมื่อกำจัดยูนิตศัตรู',
     actionType: 'gain-resource' as const,
     powerValue: 1,
     weight: 2,
   },
   {
     id: 'ab-teleport',
-    name: 'Void Step',
-    description: 'Teleport to any empty cell up to 2 spaces away.',
+    name: 'ก้าวกระโดดมิติ (Void Step)',
+    description: 'เทเลพอร์ตข้ามไปยังช่องว่างในระยะ 2 ช่อง',
     actionType: 'teleport' as const,
     powerValue: 2,
     weight: 2,
@@ -61,7 +61,7 @@ const ABILITY_TEMPLATES = [
 ];
 
 export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onClose }) => {
-  const [name, setName] = useState('Nexus Vanguard');
+  const [name, setName] = useState('ผู้พิทักษ์แนวหน้าเน็กซัส');
   const [universe, setUniverse] = useState<Universe>('creators-circle');
   const [cardType, setCardType] = useState<CardType>('unit');
   const [attack, setAttack] = useState(3);
@@ -71,7 +71,7 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
   const [range, setRange] = useState(1);
   const [canCapture, setCanCapture] = useState(true);
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
-  const [flavor, setFlavor] = useState('An architect forged in the heart of the Frontline Nexus.');
+  const [flavor, setFlavor] = useState('สถาปนิกผู้ถูกหลอมขึ้นจากหัวใจแห่งแนวรบเน็กซัส');
 
   // Dynamic Balance & Cost Calculator formula
   const selectedTemplate = ABILITY_TEMPLATES[selectedTemplateIndex];
@@ -90,7 +90,7 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
   // Assembled Card
   const customCard: CardDefinition = {
     id: `custom-${Date.now()}`,
-    name: name.trim() || 'Untitled Hero',
+    name: name.trim() || 'วีรบุรุษไร้นาม',
     universe,
     cardType,
     rarity: calculatedCharge >= 5 ? 'epic' : calculatedCharge >= 4 ? 'rare' : 'uncommon',
@@ -104,7 +104,7 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
     move,
     range,
     canCapture,
-    keywords: [universe === 'creators-circle' ? "Creator's Circle" : 'Multiverse Hybrid', selectedTemplate.name],
+    keywords: [universe === 'creators-circle' ? "วงแหวนผู้สร้าง" : 'ไฮบริดมัลติเวิร์ส', selectedTemplate.name],
     abilities: [
       {
         id: `ab-custom-${Date.now()}`,
@@ -131,17 +131,17 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
       <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
         <div>
           <h2 className="font-display text-xl font-bold text-slate-100 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-pink-400" /> Creator's Circle · Custom Card Forge
+            <Sparkles className="w-5 h-5 text-pink-400" /> วงแหวนผู้สร้าง · เตาหลอมการ์ดดั้งเดิม (Creator's Forge)
           </h2>
           <p className="text-xs text-slate-400">
-            Design original multiverse champions with our deterministic cost-balancing engine.
+            ออกแบบการ์ดยูนิตและวีรบุรุษมัลติเวิร์สด้วยระบบคำนวณความสมดุลอัตโนมัติ
           </p>
         </div>
         <button
           onClick={handleSave}
           className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold text-xs shadow-lg shadow-pink-950/40 transition-all"
         >
-          <Check className="w-4 h-4" /> Forge & Add to Collection
+          <Check className="w-4 h-4" /> หลอมการ์ดและบันทึกเข้าคลัง
         </button>
       </div>
 
@@ -151,44 +151,44 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
         <div className="md:col-span-7 space-y-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
           {/* Card Name */}
           <div>
-            <label className="text-xs font-bold text-slate-300 block mb-1">Character / Card Name</label>
+            <label className="text-xs font-bold text-slate-300 block mb-1">ชื่อตัวละคร / การ์ด</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-pink-500"
-              placeholder="e.g. Aether Panzer Scout"
+              placeholder="เช่น สอดแนมเกราะไอพ่นเอเธอร์"
             />
           </div>
 
           {/* Universe & Card Type */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-slate-300 block mb-1">Universe Realm</label>
+              <label className="text-xs font-bold text-slate-300 block mb-1">จักรวาลกำเนิด</label>
               <select
                 value={universe}
                 onChange={(e) => setUniverse(e.target.value as Universe)}
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none"
               >
-                <option value="creators-circle">Creator's Circle (Custom)</option>
-                <option value="iron-frontier">Iron Frontier (Dieselpunk)</option>
-                <option value="arcane-dominion">Arcane Dominion (Fantasy)</option>
-                <option value="neo-genesis">Neo Genesis (Cybernetic)</option>
-                <option value="mythic-wilds">Mythic Wilds (Beasts & Dragons)</option>
+                <option value="creators-circle">วงแหวนผู้สร้าง (กำหนดเอง)</option>
+                <option value="iron-frontier">ไอรอนฟรอนเทียร์ (ดีเซลพังก์)</option>
+                <option value="arcane-dominion">อาร์เคนโดมิเนียน (เวทมนตร์)</option>
+                <option value="neo-genesis">นีโอเจเนซิส (ไซเบอร์เนติกส์)</option>
+                <option value="mythic-wilds">แดนสัตว์ร้ายมายา (สัตว์เทวะ)</option>
               </select>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-300 block mb-1">Card Classification</label>
+              <label className="text-xs font-bold text-slate-300 block mb-1">ประเภทการ์ด</label>
               <select
                 value={cardType}
                 onChange={(e) => setCardType(e.target.value as CardType)}
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-200 focus:outline-none"
               >
-                <option value="unit">Tactical Unit</option>
-                <option value="structure">Defense Structure</option>
-                <option value="tactic">Battlefield Tactic</option>
-                <option value="relic">Relic Equipment</option>
+                <option value="unit">ยูนิตทางยุทธวิธี</option>
+                <option value="structure">ป้อมปราการและสิ่งปลูกสร้าง</option>
+                <option value="tactic">ยุทธวิธีสนามรบ</option>
+                <option value="relic">โบราณวัตถุ</option>
               </select>
             </div>
           </div>
@@ -197,9 +197,9 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
           {cardType === 'unit' && (
             <div className="p-3 bg-slate-900/60 rounded-xl border border-slate-800 space-y-3">
               <div className="text-xs font-bold text-cyan-400 flex items-center justify-between">
-                <span>Combat Attributes</span>
+                <span>คุณสมบัติการรบ</span>
                 <span className="text-[10px] text-slate-400 font-normal">
-                  Higher attributes raise deployment cost
+                  ค่าสถานะยิ่งสูง จะทำให้ค่าร่ายจัดวางกำลังสูงขึ้นตามสูตรสมดุล
                 </span>
               </div>
 
@@ -207,7 +207,7 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
               <div>
                 <div className="flex justify-between text-xs text-slate-300 mb-1">
                   <span className="flex items-center gap-1 text-rose-400">
-                    <Swords className="w-3.5 h-3.5" /> Attack Power
+                    <Swords className="w-3.5 h-3.5" /> พลังโจมตี (ATK)
                   </span>
                   <span className="font-mono-nums font-bold text-rose-300">{attack}</span>
                 </div>
@@ -225,7 +225,7 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
               <div>
                 <div className="flex justify-between text-xs text-slate-300 mb-1">
                   <span className="flex items-center gap-1 text-emerald-400">
-                    <Heart className="w-3.5 h-3.5" /> Max Health
+                    <Heart className="w-3.5 h-3.5" /> พลังชีวิตสูงสุด (HP)
                   </span>
                   <span className="font-mono-nums font-bold text-emerald-300">{health}</span>
                 </div>
@@ -243,7 +243,7 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
               <div>
                 <div className="flex justify-between text-xs text-slate-300 mb-1">
                   <span className="flex items-center gap-1 text-sky-400">
-                    <Shield className="w-3.5 h-3.5" /> Armor / Defense
+                    <Shield className="w-3.5 h-3.5" /> เกราะป้องกัน (DEF)
                   </span>
                   <span className="font-mono-nums font-bold text-sky-300">{defense}</span>
                 </div>
@@ -262,7 +262,7 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
                 <div>
                   <div className="flex justify-between text-xs text-slate-300 mb-1">
                     <span className="flex items-center gap-1 text-amber-400">
-                      <Navigation className="w-3.5 h-3.5" /> Movement
+                      <Navigation className="w-3.5 h-3.5" /> ระยะเคลื่อนพล
                     </span>
                     <span className="font-mono-nums font-bold text-amber-300">{move}</span>
                   </div>
@@ -279,7 +279,7 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
                 <div>
                   <div className="flex justify-between text-xs text-slate-300 mb-1">
                     <span className="flex items-center gap-1 text-indigo-400">
-                      <Crosshair className="w-3.5 h-3.5" /> Range
+                      <Crosshair className="w-3.5 h-3.5" /> ระยะยิงโจมตี
                     </span>
                     <span className="font-mono-nums font-bold text-indigo-300">{range}</span>
                   </div>
@@ -303,7 +303,7 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
                   className="rounded border-slate-700 text-pink-600 focus:ring-0"
                 />
                 <span className="flex items-center gap-1 font-semibold text-amber-300">
-                  <Flag className="w-3.5 h-3.5" /> Can Capture Strategic Outposts
+                  <Flag className="w-3.5 h-3.5" /> สามารถยึดฐานยุทธศาสตร์ (Can Capture Outposts)
                 </span>
               </label>
             </div>
@@ -311,7 +311,7 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
 
           {/* Ability Template Selection */}
           <div>
-            <label className="text-xs font-bold text-slate-300 block mb-1">Ability Blueprint</label>
+            <label className="text-xs font-bold text-slate-300 block mb-1">แม่แบบความสามารถพิเศษ (Ability Blueprint)</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {ABILITY_TEMPLATES.map((tmpl, idx) => (
                 <button
@@ -335,7 +335,7 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
 
           {/* Flavor Text */}
           <div>
-            <label className="text-xs font-bold text-slate-300 block mb-1">Flavor Lore</label>
+            <label className="text-xs font-bold text-slate-300 block mb-1">บทบรรยายและเรื่องราว (Flavor Lore)</label>
             <textarea
               rows={2}
               value={flavor}
@@ -348,26 +348,26 @@ export const CardCreator: React.FC<CardCreatorProps> = ({ onSaveCustomCard, onCl
         {/* RIGHT COLUMN: LIVE HOLOGRAPHIC PREVIEW & COST BREAKDOWN (5 cols) */}
         <div className="md:col-span-5 flex flex-col items-center justify-center bg-slate-950 p-4 rounded-xl border border-slate-800">
           <div className="text-xs uppercase font-bold text-slate-400 tracking-wider mb-2">
-            Deterministic Balance Matrix
+            เมทริกซ์คำนวณสมดุล (Deterministic Balance Matrix)
           </div>
 
           <div className="w-full bg-slate-900 rounded-lg p-3 border border-slate-800 text-xs mb-4">
             <div className="flex items-center justify-between py-1 border-b border-slate-800">
-              <span className="text-slate-400">Total Combat Weight:</span>
+              <span className="text-slate-400">น้ำหนักพลังรบรวม:</span>
               <span className="font-mono-nums font-bold text-slate-200">
-                {statWeight.toFixed(1)} pts
+                {statWeight.toFixed(1)} คะแนน
               </span>
             </div>
             <div className="flex items-center justify-between py-1 border-b border-slate-800">
-              <span className="text-slate-400">Calculated Charge Cost:</span>
+              <span className="text-slate-400">ค่าร่ายประจุไฟฟ้าคำนวณได้:</span>
               <span className="font-mono-nums font-bold text-amber-300 text-sm">
-                ⚡ {calculatedCharge} Charge
+                ⚡ {calculatedCharge} ประจุไฟฟ้า (Charge)
               </span>
             </div>
             <div className="flex items-center justify-between py-1">
-              <span className="text-slate-400">Multiverse Rift Cost:</span>
+              <span className="text-slate-400">ค่าร่ายพลังงานมิติริฟต์:</span>
               <span className="font-mono-nums font-bold text-purple-300 text-sm">
-                🌀 {calculatedRift} Rift
+                🌀 {calculatedRift} ริฟต์ (Rift)
               </span>
             </div>
           </div>

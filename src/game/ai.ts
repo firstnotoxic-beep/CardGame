@@ -61,7 +61,7 @@ export function runAITurn(initialState: GameState): GameState {
           };
           emptyCell.unitId = unitId;
           ai.hand.splice(i, 1);
-          state.combatLog.unshift(`[AI ACTION] Architect deployed ${def.name} in ${emptyCell.lane.toUpperCase()} lane.`);
+          state.combatLog.unshift(`[การกระทำ AI] สถาปนิกฝ่ายตรงข้ามส่ง ${def.name} ลงสู่เลน ${emptyCell.lane.toUpperCase()}`);
         }
       } else if (def.cardType === 'structure') {
         // Deploy structure in row 1
@@ -91,7 +91,7 @@ export function runAITurn(initialState: GameState): GameState {
           };
           emptyCell.structureId = structId;
           ai.hand.splice(i, 1);
-          state.combatLog.unshift(`[AI ACTION] Architect constructed ${def.name} in ${emptyCell.lane.toUpperCase()} lane.`);
+          state.combatLog.unshift(`[การกระทำ AI] สถาปนิกฝ่ายตรงข้ามสร้าง ${def.name} ในเลน ${emptyCell.lane.toUpperCase()}`);
         }
       }
     }

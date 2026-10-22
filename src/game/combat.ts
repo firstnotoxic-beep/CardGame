@@ -46,12 +46,12 @@ export function executeCombat(
     attackerUnit.hasAttackedThisTurn = true;
     soundFx.playAttack('kinetic');
 
-    const log = `[COMBAT] ${attacker.name} struck ${defendingPlayer.name}'s Main Base for ${actualDamage} damage! (Nexus Integrity: ${defendingPlayer.baseHealth}/30)`;
+    const log = `[ประจัญบาน] ${attacker.name} โจมตีฐานทัพเน็กซัสของ ${defendingPlayer.name} สร้างความเสียหาย ${actualDamage} หน่วย! (ความสมบูรณ์เน็กซัส: ${defendingPlayer.baseHealth}/30)`;
     next.combatLog.unshift(log);
 
     if (defendingPlayer.baseHealth <= 0) {
       next.winner = attacker.owner;
-      next.winReason = `${activePlayer.name} demolished the opposing Main Base!`;
+      next.winReason = `${activePlayer.name} ทำลายฐานทัพเน็กซัสของศัตรูสำเร็จ!`;
       soundFx.playVictory();
     }
 
@@ -97,13 +97,13 @@ export function executeCombat(
     let attackerDied = false;
     let counterDamage = 0;
 
-    let log = `[COMBAT] ${attacker.name} attacked ${defender.name} dealing ${damageDealt} DMG (HP: ${defender.currentHealth}/${defender.maxHealth})`;
+    let log = `[ประจัญบาน] ${attacker.name} เข้าโจมตี ${defender.name} สร้างความเสียหาย ${damageDealt} DMG (HP: ${defender.currentHealth}/${defender.maxHealth})`;
 
     if (defender.currentHealth <= 0) {
       defenderDied = true;
       delete next.units[defender.id];
       targetCell.unitId = null;
-      log += ` - ${defender.name} was destroyed!`;
+      log += ` - ${defender.name} ถูกทำลายสิ้นซาก!`;
     } else {
       // Counter-attack if defender is within range
       const rowDist = Math.abs(defender.row - attacker.row);
@@ -115,13 +115,13 @@ export function executeCombat(
         const attackerCover = attackerCell?.coverBonus || 0;
         counterDamage = Math.max(1, defender.attack - (attacker.defense + attackerCover));
         attackerUnit.currentHealth = Math.max(0, attackerUnit.currentHealth - counterDamage);
-        log += ` | Retaliation: ${defender.name} counter-attacked for ${counterDamage} DMG (HP: ${attackerUnit.currentHealth}/${attackerUnit.maxHealth})`;
+        log += ` | โต้กลับ: ${defender.name} ยิงสวนกลับ ${counterDamage} DMG (HP: ${attackerUnit.currentHealth}/${attackerUnit.maxHealth})`;
 
         if (attackerUnit.currentHealth <= 0) {
           attackerDied = true;
           delete next.units[attacker.id];
           if (attackerCell) attackerCell.unitId = null;
-          log += ` - ${attacker.name} was destroyed in return fire!`;
+          log += ` - ${attacker.name} ถูกทำลายจากการยิงตอบโต้!`;
         }
       }
     }
@@ -151,13 +151,13 @@ export function executeCombat(
     soundFx.playAttack('kinetic');
 
     let destroyed = false;
-    let log = `[COMBAT] ${attacker.name} bombarded ${structure.name} for ${damageDealt} DMG (${structure.currentHealth}/${structure.maxHealth} HP)`;
+    let log = `[ประจัญบาน] ${attacker.name} ระดมยิงสิ่งปลูกสร้าง ${structure.name} สร้างความเสียหาย ${damageDealt} DMG (${structure.currentHealth}/${structure.maxHealth} HP)`;
 
     if (structure.currentHealth <= 0) {
       destroyed = true;
       delete next.structures[structure.id];
       targetCell.structureId = null;
-      log += ` - ${structure.name} was razed to the ground!`;
+      log += ` - ${structure.name} พังทลายลงแล้ว!`;
     }
 
     next.combatLog.unshift(log);
@@ -216,7 +216,7 @@ export function resolveOutpostCaptures(state: GameState): GameState {
         outpost.owner = null;
         outpost.captureProgress = 0;
         outpost.capturingPlayer = occupyingOwner;
-        next.combatLog.unshift(`[OUTPOST] ${occupyingUnit.name} has neutralized ${outpost.name}!`);
+        next.combatLog.unshift(`[ยึดฐาน] ${occupyingUnit.name} ได้ทำให้ ${outpost.name} กลายเป็นกลาง!`);
         soundFx.playCapture();
       }
     } else {
@@ -227,7 +227,7 @@ export function resolveOutpostCaptures(state: GameState): GameState {
         outpost.owner = occupyingOwner;
         outpost.captureProgress = 100;
         const ownerName = occupyingOwner === 'player1' ? next.player1.name : next.player2.name;
-        next.combatLog.unshift(`[OUTPOST] ★ ${ownerName} has captured ${outpost.name}!`);
+        next.combatLog.unshift(`[ยึดฐาน] ★ ${ownerName} ยึดครอง ${outpost.name} ได้สำเร็จ!`);
         soundFx.playCapture();
       }
     }
@@ -252,13 +252,13 @@ export function resolveEconomyIncome(state: GameState, player: 'player1' | 'play
   const supplyOutpost = next.outposts['outpost-0'];
   if (supplyOutpost && supplyOutpost.owner === player && !supplyOutpost.isContested) {
     p.resources.charge = Math.min(10, p.resources.charge + 1);
-    next.combatLog.unshift(`[ECONOMY] Supply Outpost provided +1 Charge to ${p.name}!`);
+    next.combatLog.unshift(`[เศรษฐกิจ] ฐานส่งกำลังบำรุงมอบ +1 Charge ให้แก่ ${p.name}!`);
   }
 
   const relayOutpost = next.outposts['outpost-2'];
   if (relayOutpost && relayOutpost.owner === player && !relayOutpost.isContested) {
     p.resources.rift = Math.min(10, p.resources.rift + 1);
-    next.combatLog.unshift(`[ECONOMY] Relay Outpost channeled +1 Rift Energy to ${p.name}!`);
+    next.combatLog.unshift(`[เศรษฐกิจ] ฐานรีเลย์ส่งมอบ +1 Rift ให้แก่ ${p.name}!`);
   }
 
   return next;
@@ -275,12 +275,12 @@ export function performAirborneDeployment(
 
   // Verify resources: 3 Charge + 1 Rift
   if (player.resources.charge < 3 || player.resources.rift < 1) {
-    throw new Error('Insufficient resources: Requires 3 Charge and 1 Rift.');
+    throw new Error('ทรัพยากรไม่เพียงพอ: ต้องการ 3 Charge และ 1 Rift');
   }
 
   const targetCell = next.cells[targetCellId];
   if (!targetCell || targetCell.unitId) {
-    throw new Error('Destination cell is invalid or occupied.');
+    throw new Error('ช่องเป้าหมายไม่ถูกต้องหรือมียูนิตอื่นอยู่แล้ว');
   }
 
   player.resources.charge -= 3;
@@ -318,7 +318,7 @@ export function performAirborneDeployment(
 
   soundFx.playAttack('airborne');
   next.combatLog.unshift(
-    `[AIRBORNE DROP] ✈️ ${player.name} conducted an Airborne Paratrooper drop onto ${targetCell.lane.toUpperCase()} lane (${targetCellId})!`
+    `[ทิ้งร่มทางอากาศ] ✈️ ${player.name} ส่งหน่วยพลร่มจู่โจมลงสู่เลน ${targetCell.lane.toUpperCase()} (${targetCellId})!`
   );
 
   return next;

@@ -128,7 +128,7 @@ export const CardView: React.FC<CardViewProps> = ({
           <div className="text-center z-20 px-3">
             {card.canCapture ? (
               <div className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-600/40 mb-1">
-                <Flag className="w-3 h-3" /> Outpost Capturer
+                <Flag className="w-3 h-3" /> ยูนิตยึดฐาน (Outpost Capturer)
               </div>
             ) : null}
             {card.keywords && card.keywords.length > 0 ? (
@@ -136,7 +136,7 @@ export const CardView: React.FC<CardViewProps> = ({
                 {card.keywords.join(' · ')}
               </div>
             ) : (
-              <div className="text-[11px] text-slate-400">Tactical Multiverse Asset</div>
+              <div className="text-[11px] text-slate-400">การ์ดยุทธวิธีพหุภพ</div>
             )}
           </div>
         </div>
@@ -152,7 +152,7 @@ export const CardView: React.FC<CardViewProps> = ({
             ))
           ) : (
             <div className="text-slate-400 italic leading-relaxed">
-              Standard tactical combat deployment.
+              การจัดวางกำลังและต่อสู้ตามมาตรฐาน
             </div>
           )}
         </div>
@@ -170,35 +170,35 @@ export const CardView: React.FC<CardViewProps> = ({
         <div className="grid grid-cols-5 gap-1 pt-2 border-t border-slate-800 text-center font-mono-nums text-xs">
           <div className="flex flex-col items-center p-1 rounded bg-rose-950/30 border border-rose-900/40">
             <span className="text-[9px] text-rose-400 font-sans flex items-center gap-0.5">
-              <Swords className="w-2.5 h-2.5" /> ATK
+              <Swords className="w-2.5 h-2.5" /> โจมตี
             </span>
             <span className="font-bold text-rose-300 text-sm">{card.attack}</span>
           </div>
 
           <div className="flex flex-col items-center p-1 rounded bg-emerald-950/30 border border-emerald-900/40">
             <span className="text-[9px] text-emerald-400 font-sans flex items-center gap-0.5">
-              <Heart className="w-2.5 h-2.5" /> HP
+              <Heart className="w-2.5 h-2.5" /> เลือด
             </span>
             <span className="font-bold text-emerald-300 text-sm">{card.health}</span>
           </div>
 
           <div className="flex flex-col items-center p-1 rounded bg-sky-950/30 border border-sky-900/40">
             <span className="text-[9px] text-sky-400 font-sans flex items-center gap-0.5">
-              <Shield className="w-2.5 h-2.5" /> DEF
+              <Shield className="w-2.5 h-2.5" /> เกราะ
             </span>
             <span className="font-bold text-sky-300 text-sm">{card.defense}</span>
           </div>
 
           <div className="flex flex-col items-center p-1 rounded bg-amber-950/30 border border-amber-900/40">
             <span className="text-[9px] text-amber-400 font-sans flex items-center gap-0.5">
-              <Navigation className="w-2.5 h-2.5" /> MOV
+              <Navigation className="w-2.5 h-2.5" /> เคลื่อน
             </span>
             <span className="font-bold text-amber-300 text-sm">{card.move}</span>
           </div>
 
           <div className="flex flex-col items-center p-1 rounded bg-indigo-950/30 border border-indigo-900/40">
             <span className="text-[9px] text-indigo-400 font-sans flex items-center gap-0.5">
-              <Crosshair className="w-2.5 h-2.5" /> RNG
+              <Crosshair className="w-2.5 h-2.5" /> ระยะ
             </span>
             <span className="font-bold text-indigo-300 text-sm">{card.range}</span>
           </div>
@@ -206,19 +206,19 @@ export const CardView: React.FC<CardViewProps> = ({
       ) : card.cardType === 'structure' ? (
         <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-xs font-mono-nums">
           <span className="text-emerald-400 flex items-center gap-1">
-            <Heart className="w-3.5 h-3.5" /> HP: {card.health}
+            <Heart className="w-3.5 h-3.5" /> เลือด: {card.health}
           </span>
           <span className="text-sky-400 flex items-center gap-1">
-            <Shield className="w-3.5 h-3.5" /> Armor: {card.defense}
+            <Shield className="w-3.5 h-3.5" /> เกราะ: {card.defense}
           </span>
           <span className="text-amber-400 font-bold uppercase text-[10px]">
-            Structure
+            สิ่งปลูกสร้าง
           </span>
         </div>
       ) : (
         <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-xs text-slate-400">
           <span className="uppercase text-[10px] tracking-wider font-semibold text-cyan-400">
-            {card.cardType}
+            {card.cardType === 'tactic' ? 'ยุทธวิธี (Tactic)' : card.cardType === 'relic' ? 'เครื่องราง (Relic)' : card.cardType}
           </span>
           <span className="text-[10px] font-mono-nums capitalize text-slate-500">
             {card.rarity}

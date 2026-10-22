@@ -2,11 +2,11 @@ import { CardDefinition, Universe } from '../types/game';
 
 export const CARD_DATABASE: Record<string, CardDefinition> = {
   // ==========================================
-  // 1. IRON FRONTIER (Dieselpunk)
+  // 1. IRON FRONTIER (ดีเซลพังค์และกองทัพจักรกล)
   // ==========================================
   'IF-01': {
     id: 'IF-01',
-    name: 'Frontline Riflemen',
+    name: 'ทหารราบแนวหน้า (Frontline Riflemen)',
     universe: 'iron-frontier',
     cardType: 'unit',
     rarity: 'common',
@@ -17,13 +17,13 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     move: 2,
     range: 1,
     canCapture: true,
-    keywords: ['Infantry', 'Rapid March'],
-    flavor: 'Hardened trench veterans who know every inch of contested mud.',
+    keywords: ['ทหารราบ (Infantry)', 'เดินทัพเร็ว'],
+    flavor: 'ทหารผ่านศึกสนามเพลาะผู้เจนจัดในทุกตารางนิ้วของสมรภูมิโคลนตม',
     abilities: [
       {
         id: 'ab-entrench',
-        name: 'Dig In',
-        description: 'Gain +1 Defense when occupying cover or outpost cells.',
+        name: 'ขุดสนามเพลาะ (Dig In)',
+        description: 'ได้รับเกราะ +1 Defense เมื่ออยู่ในช่องที่กำบังหรือจุดยุทธศาสตร์',
         trigger: 'passive',
         actionType: 'stat-buff',
       },
@@ -32,7 +32,7 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
 
   'IF-02': {
     id: 'IF-02',
-    name: 'Ironclad Trench Walker',
+    name: 'หุ่นรบเกราะเหล็ก (Ironclad Trench Walker)',
     universe: 'iron-frontier',
     cardType: 'unit',
     rarity: 'uncommon',
@@ -43,13 +43,13 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     move: 1,
     range: 1,
     canCapture: true,
-    keywords: ['Heavy Armor', 'Siege'],
-    flavor: 'A diesel-belching armored walker capable of smashing reinforced pillboxes.',
+    keywords: ['เกราะหนาพิเศษ', 'ทำลายป้อมปราการ (Siege)'],
+    flavor: 'จักรกลไอน้ำดีเซลหุ้มเกราะหนักที่สามารถบดขยี้บังเกอร์คอนกรีตเสริมเหล็กได้',
   },
 
   'IF-03': {
     id: 'IF-03',
-    name: 'Siege Mortar Battery',
+    name: 'กองพันปืนใหญ่ครก (Siege Mortar Battery)',
     universe: 'iron-frontier',
     cardType: 'unit',
     rarity: 'rare',
@@ -60,26 +60,26 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     move: 1,
     range: 3,
     canCapture: false,
-    keywords: ['Artillery', 'Indirect Fire'],
-    flavor: 'Can fire over friendly lines and terrain to pulverize distant strongholds.',
+    keywords: ['ปืนใหญ่ยิงวิถีโค้ง (Artillery)', 'โจมตีข้ามสิ่งกีดขวาง'],
+    flavor: 'ยิงกระสุนปืนใหญ่วิถีโค้งข้ามแนวรบเพื่อถล่มฐานที่มั่นระยะไกลของศัตรู',
   },
 
   'IF-04': {
     id: 'IF-04',
-    name: 'Tactical Airbase',
+    name: 'ฐานทัพอากาศยุทธวิธี (Tactical Airbase)',
     universe: 'iron-frontier',
     cardType: 'structure',
     rarity: 'epic',
     cost: { charge: 4, rift: 1 },
     health: 8,
     defense: 2,
-    keywords: ['Airfield', 'Logistics'],
-    flavor: 'Rear airfield terminal coordinating long-range airdrops across the frontline.',
+    keywords: ['ฐานทัพอากาศ', 'ส่งกำลังบำรุง'],
+    flavor: 'ศูนย์บัญชาการการบินแนวหลังที่สามารถทิ้งร่มส่งกองกำลังพลร่มเข้าสู่แนวหน้าได้ทันที',
     abilities: [
       {
         id: 'ab-airborne-deploy',
-        name: 'Airborne Deployment',
-        description: 'Deploy Paratroopers directly onto any Outpost or rear landing zone.',
+        name: 'ส่งพลร่มทางอากาศ (Airborne Deployment)',
+        description: 'ส่งพลร่มจู่โจมลงสู่จุดยุทธศาสตร์หรือแนวหลังของสนามรบได้โดยตรง (ใช้ 3⚡ + 1🌀)',
         trigger: 'active',
         actionType: 'airborne-drop',
         cost: { charge: 3, rift: 1 },
@@ -89,7 +89,7 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
 
   'IF-05': {
     id: 'IF-05',
-    name: 'Airborne Paratroopers',
+    name: 'พลร่มจู่โจมพิเศษ (Airborne Paratroopers)',
     universe: 'iron-frontier',
     cardType: 'unit',
     rarity: 'rare',
@@ -100,26 +100,26 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     move: 2,
     range: 1,
     canCapture: true,
-    keywords: ['Airborne Drop', 'Rapid Capture', 'Infiltrator'],
-    flavor: 'Special operations squad deployed via glider or transport into enemy sectors.',
+    keywords: ['ทิ้งร่มทางอากาศ (Airborne Drop)', 'ยึดฐานรวดเร็ว', 'แทรกซึม'],
+    flavor: 'หน่วยปฏิบัติการพิเศษที่โดดร่มลงจากอากาศเพื่อเข้ายึดจุดยุทธศาสตร์สำคัญ',
   },
 
   'IF-06': {
     id: 'IF-06',
-    name: 'Fortified Bunker',
+    name: 'บังเกอร์คอนกรีตเสริมเหล็ก (Fortified Bunker)',
     universe: 'iron-frontier',
     cardType: 'structure',
     rarity: 'common',
     cost: { charge: 3 },
     health: 9,
     defense: 4,
-    keywords: ['Cover', 'Sturdy'],
-    flavor: 'Reinforced ferro-concrete garrison shielding adjacent allies.',
+    keywords: ['ที่กำบังชั้นยอด', 'แข็งแกร่ง'],
+    flavor: 'ป้อมปราการเสริมความมั่นคงที่ช่วยลดทอนความเสียหายให้ยูนิตใกล้เคียง',
   },
 
   'IF-07': {
     id: 'IF-07',
-    name: 'Combat Engineer',
+    name: 'ทหารช่างสนามรบ (Combat Engineer)',
     universe: 'iron-frontier',
     cardType: 'unit',
     rarity: 'common',
@@ -130,23 +130,23 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     move: 2,
     range: 1,
     canCapture: true,
-    keywords: ['Repair', 'Builder'],
-    flavor: 'Repairs damaged structures and outposts by +2 HP each turn.',
+    keywords: ['ซ่อมแซมสิ่งก่อสร้าง', 'ทหารช่าง'],
+    flavor: 'ซ่อมแซมสิ่งปลูกสร้างและจุดยุทธศาสตร์ที่เสียหาย +2 HP ในทุกๆ เทิร์น',
   },
 
   'IF-08': {
     id: 'IF-08',
-    name: 'Carpet Bombing',
+    name: 'ทิ้งระเบิดปูพรม (Carpet Bombing)',
     universe: 'iron-frontier',
     cardType: 'tactic',
     rarity: 'rare',
     cost: { charge: 4 },
-    flavor: 'Heavy bombers carpet an entire lane segment with high-explosive ordnance.',
+    flavor: 'ฝูงบินทิ้งระเบิดหนักโปรยระเบิดทำลายล้างครอบคลุมทั้งเลน',
     abilities: [
       {
         id: 'ab-carpet-bomb',
-        name: 'Air Strike',
-        description: 'Deal 3 damage to all enemy units in the targeted lane.',
+        name: 'โจมตีทางอากาศ (Air Strike)',
+        description: 'สร้างความเสียหาย 3 หน่วยแก่ยูนิตศัตรูทั้งหมดในเลนที่กำหนด',
         trigger: 'active',
         actionType: 'aoe-damage',
         powerValue: 3,
@@ -155,11 +155,11 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
   },
 
   // ==========================================
-  // 2. ARCANE DOMINION (Fantasy & Sorcery)
+  // 2. ARCANE DOMINION (เวทมนตร์และพลังมิติมหัศจรรย์)
   // ==========================================
   'AD-01': {
     id: 'AD-01',
-    name: 'Mystic Spellblade',
+    name: 'ดาบมนตราอาร์เคน (Mystic Spellblade)',
     universe: 'arcane-dominion',
     cardType: 'unit',
     rarity: 'common',
@@ -170,13 +170,13 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     move: 2,
     range: 1,
     canCapture: true,
-    keywords: ['Magic Burst', 'Swift'],
-    flavor: 'Wields blades forged from condensed mana crystals.',
+    keywords: ['ระเบิดเวทมนตร์', 'ว่องไว'],
+    flavor: 'กวัดแกว่งดาบที่ตีขึ้นจากผลึกมานาเข้มข้น ฟันทะลวงเกราะศัตรู',
   },
 
   'AD-02': {
     id: 'AD-02',
-    name: 'Aether Magus',
+    name: 'จอมเวทเอเธอร์ (Aether Magus)',
     universe: 'arcane-dominion',
     cardType: 'unit',
     rarity: 'rare',
@@ -187,13 +187,13 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     move: 2,
     range: 3,
     canCapture: false,
-    keywords: ['Spellcaster', 'Rift Siphon'],
-    flavor: 'Draws upon the nexus vortex to channel searing arcane beams.',
+    keywords: ['นักเวทระยะไกล', 'สูบพลังริฟต์'],
+    flavor: 'ดึงพลังจากกระแสวนมิติเพื่อยิงลำแสงอาร์เคนเผาผลาญศัตรูจากระยะไกล',
     abilities: [
       {
         id: 'ab-siphon-rift',
-        name: 'Rift Siphon',
-        description: 'Generates +1 Rift when eliminating an enemy unit.',
+        name: 'สูบพลังงานริฟต์ (Rift Siphon)',
+        description: 'สร้างพลังงานริฟต์ +1 Rift เมื่อสังหารยูนิตศัตรูสำเร็จ',
         trigger: 'combat',
         actionType: 'gain-resource',
         powerValue: 1,
@@ -203,20 +203,20 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
 
   'AD-03': {
     id: 'AD-03',
-    name: 'Arcane Obelisk',
+    name: 'เสาโอเบลิสก์มนตรา (Arcane Obelisk)',
     universe: 'arcane-dominion',
     cardType: 'structure',
     rarity: 'uncommon',
     cost: { charge: 3, rift: 1 },
     health: 7,
     defense: 2,
-    keywords: ['Mana Well', 'Rift Conduit'],
-    flavor: 'A floating crystalline spire pulsing with trans-dimensional energy.',
+    keywords: ['บ่อน้ำพุมานา', 'ท่อส่งพลังริฟต์'],
+    flavor: 'ยอดหอคอยคริสตัลลอยฟ้าที่สั่นพ้องด้วยพลังงานข้ามมิติ',
     abilities: [
       {
         id: 'ab-rift-generation',
-        name: 'Mana Surge',
-        description: 'Generates +1 Rift each Economy phase for its controller.',
+        name: 'มานาคลั่ง (Mana Surge)',
+        description: 'สร้าง +1 พลังริฟต์ในเฟสเศรษฐกิจให้แก่ผู้ควบคุม',
         trigger: 'turn-start',
         actionType: 'gain-resource',
         powerValue: 1,
@@ -226,17 +226,17 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
 
   'AD-04': {
     id: 'AD-04',
-    name: 'Dimensional Blink',
+    name: 'ก้าวกระโดดมิติ (Dimensional Blink)',
     universe: 'arcane-dominion',
     cardType: 'tactic',
     rarity: 'uncommon',
     cost: { charge: 2, rift: 1 },
-    flavor: 'Folds spacetime to instantly reposition a friendly unit.',
+    flavor: 'พับกาลอวกาศเพื่อเคลื่อนย้ายยูนิตพันธมิตรในพริบตา',
     abilities: [
       {
         id: 'ab-blink',
-        name: 'Rift Phase',
-        description: 'Teleport any friendly unit up to 3 cells away to an empty cell.',
+        name: 'ริฟต์เฟส (Rift Phase)',
+        description: 'เทเลพอร์ตยูนิตฝ่ายเราไปยังช่องว่างได้ไกลสูงสุด 3 ช่อง',
         trigger: 'active',
         actionType: 'teleport',
         powerValue: 3,
@@ -246,7 +246,7 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
 
   'AD-05': {
     id: 'AD-05',
-    name: 'Barrier Golem',
+    name: 'โกเลมหินบาเรีย (Barrier Golem)',
     universe: 'arcane-dominion',
     cardType: 'unit',
     rarity: 'uncommon',
@@ -257,23 +257,23 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     move: 1,
     range: 1,
     canCapture: true,
-    keywords: ['Guarding', 'Shielded'],
-    flavor: 'Carved from granite and bound by ancient runic seals.',
+    keywords: ['อารักขา (Guarding)', 'เกราะบาเรีย'],
+    flavor: 'สลักจากศิลาแกรนิตและผนึกด้วยอักขระโบราณ คุ้มกันเพื่อนร่วมรบอย่างเหนียวแน่น',
   },
 
   'AD-06': {
     id: 'AD-06',
-    name: 'Phoenix Pyre',
+    name: 'เพลิงฟีนิกซ์สุริยะ (Phoenix Pyre)',
     universe: 'arcane-dominion',
     cardType: 'tactic',
     rarity: 'rare',
     cost: { charge: 3 },
-    flavor: 'Ignites celestial flame that cleanses enemy armor.',
+    flavor: 'จุดไฟสวรรค์ที่เผาผลาญโดยไม่สนเกราะป้องกันของศัตรู',
     abilities: [
       {
         id: 'ab-pyre',
-        name: 'Solar Flare',
-        description: 'Deal 4 magical damage directly to target enemy, ignoring armor.',
+        name: 'สุริยะแผดเผา (Solar Flare)',
+        description: 'สร้างความเสียหายเวท 4 หน่วยแก่ศัตรูเป้าหมายโดยทะลุเกราะ',
         trigger: 'active',
         actionType: 'deal-damage',
         powerValue: 4,
@@ -282,11 +282,11 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
   },
 
   // ==========================================
-  // 3. NEO GENESIS (Cybernetic & High-Tech)
+  // 3. NEO GENESIS (ไซเบอร์เนติกส์และเทคโนโลยีขั้นสูง)
   // ==========================================
   'NG-01': {
     id: 'NG-01',
-    name: 'Cyber Striker',
+    name: 'หน่วยจู่โจมไซเบอร์ (Cyber Striker)',
     universe: 'neo-genesis',
     cardType: 'unit',
     rarity: 'common',
@@ -297,13 +297,13 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     move: 3,
     range: 1,
     canCapture: true,
-    keywords: ['High Mobility', 'Cybernetic'],
-    flavor: 'Augmented shock troops equipped with neural reflexes and magnetic skates.',
+    keywords: ['ความคล่องตัวสูง', 'ไซบอร์ก'],
+    flavor: 'กองกำลังดัดแปลงพันธุกรรมและจักรกล เคลื่อนที่รวดเร็วด้วยสเก็ตแม่เหล็ก',
   },
 
   'NG-02': {
     id: 'NG-02',
-    name: 'Recon Drone Swarm',
+    name: 'ฝูงโดรนสอดแนม (Recon Drone Swarm)',
     universe: 'neo-genesis',
     cardType: 'unit',
     rarity: 'uncommon',
@@ -314,26 +314,26 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     move: 3,
     range: 2,
     canCapture: true,
-    keywords: ['Flying', 'Concealed'],
-    flavor: 'Micro-thruster automated scouts that bypass difficult terrain with ease.',
+    keywords: ['บินได้ (Flying)', 'พรางตัว'],
+    flavor: 'โดรนตรวจการณ์ไอพ่นขนาดจิ๋ว บินข้ามสิ่งกีดขวางและยึดฐานได้อย่างรวดเร็ว',
   },
 
   'NG-03': {
     id: 'NG-03',
-    name: 'Nanite Fabricator',
+    name: 'โรงงานผลิตนาโนบอท (Nanite Fabricator)',
     universe: 'neo-genesis',
     cardType: 'structure',
     rarity: 'rare',
     cost: { charge: 4 },
     health: 7,
     defense: 2,
-    keywords: ['Automated', 'Repair Matrix'],
-    flavor: 'Dispenses molecular repair swarms across friendly combat units.',
+    keywords: ['อัตโนมัติ', 'โครงข่ายซ่อมแซม'],
+    flavor: 'ปล่อยฝูงนาโนเทคโนโลยีระดับโมเลกุลเพื่อฟื้นฟูยูนิตฝ่ายเรา',
     abilities: [
       {
         id: 'ab-nanite-heal',
-        name: 'Nanite Surge',
-        description: 'Heals all friendly units in its lane by +2 Health every turn.',
+        name: 'นาโนฮีล (Nanite Surge)',
+        description: 'รักษาฟื้นฟูพลังชีวิตยูนิตฝ่ายเราทั้งหมดในเลนนี้ +2 HP ในทุกๆ เทิร์น',
         trigger: 'turn-start',
         actionType: 'heal',
         powerValue: 2,
@@ -343,17 +343,17 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
 
   'NG-04': {
     id: 'NG-04',
-    name: 'EMP Shockwave',
+    name: 'คลื่นช็อกเวฟ EMP (EMP Shockwave)',
     universe: 'neo-genesis',
     cardType: 'tactic',
     rarity: 'rare',
     cost: { charge: 3 },
-    flavor: 'Electromagnetic pulse disabling weapons and movement grids.',
+    flavor: 'คลื่นแม่เหล็กไฟฟ้าปิดการทำงานของระบบขับเคลื่อนและอาวุธศัตรู',
     abilities: [
       {
         id: 'ab-emp-stun',
-        name: 'Neural Jam',
-        description: 'Stun all enemy units in the target lane for 1 turn.',
+        name: 'รบกวนสัญญาณประสาท (Neural Jam)',
+        description: 'สตันยูนิตศัตรูทั้งหมดในเลนเป้าหมายเป็นเวลา 1 เทิร์น',
         trigger: 'active',
         actionType: 'deal-damage',
         powerValue: 1,
@@ -363,7 +363,7 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
 
   'NG-05': {
     id: 'NG-05',
-    name: 'Heavy Siege Colossus',
+    name: 'หุ่นยักษ์โคลอสซัส (Heavy Siege Colossus)',
     universe: 'neo-genesis',
     cardType: 'unit',
     rarity: 'epic',
@@ -374,23 +374,23 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     move: 1,
     range: 2,
     canCapture: true,
-    keywords: ['Apex Mech', 'Siege Protocol'],
-    flavor: 'Thirty tons of carbonized alloy equipped with twin railguns.',
+    keywords: ['หุ่นรบระดับเอเปกซ์', 'ทำลายล้างเน็กซัส'],
+    flavor: 'เกราะอัลลอยด์คาร์บอนหนัก 30 ตัน ติดตั้งปืนใหญ่เรลกันคู่ทำลายล้างสูง',
   },
 
   'NG-06': {
     id: 'NG-06',
-    name: 'Adaptive Shield Matrix',
+    name: 'เกราะม่านพลังงานปรับตัว (Adaptive Shield Matrix)',
     universe: 'neo-genesis',
     cardType: 'tactic',
     rarity: 'uncommon',
     cost: { charge: 1, resolve: 1 },
-    flavor: 'Emergency energy projection absorbing kinetic and energy blasts.',
+    flavor: 'ฉายม่านพลังงานฉุกเฉินดูดซับแรงระเบิดและพลังงานทำลาย',
     abilities: [
       {
         id: 'ab-shield-matrix',
-        name: 'Emergency Shield',
-        description: 'Grant target unit or Main Base 4 points of Shield.',
+        name: 'เกราะฉุกเฉิน (Emergency Shield)',
+        description: 'มอบเกราะป้องกัน 4 แต้มให้แก่ยูนิตเป้าหมายหรือเน็กซัสฐานทัพ',
         trigger: 'active',
         actionType: 'shield',
         powerValue: 4,
@@ -399,11 +399,11 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
   },
 
   // ==========================================
-  // 4. MYTHIC WILDS (Dragons & Ancient Beasts)
+  // 4. MYTHIC WILDS (มังกร สัตว์ร้าย และพลังธรรมชาติ)
   // ==========================================
   'MW-01': {
     id: 'MW-01',
-    name: 'Apex Storm Drake',
+    name: 'มังกรพายุเอเปกซ์ (Apex Storm Drake)',
     universe: 'mythic-wilds',
     cardType: 'unit',
     rarity: 'epic',
@@ -414,13 +414,13 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     move: 3,
     range: 2,
     canCapture: true,
-    keywords: ['Flying', 'Lightning Breath'],
-    flavor: 'Ruler of the highest mountain thermals, diving with supersonic fury.',
+    keywords: ['บินได้ (Flying)', 'ลมหายใจสายฟ้า'],
+    flavor: 'เจ้าแห่งเวหาบนยอดเขาสูง โฉบลงมาโจมตีด้วยความเร็วเหนือเสียงพร้อมสายฟ้าฟาด',
   },
 
   'MW-02': {
     id: 'MW-02',
-    name: 'Thornwood Behemoth',
+    name: 'อสูรพฤกษาเบฮีมอธ (Thornwood Behemoth)',
     universe: 'mythic-wilds',
     cardType: 'unit',
     rarity: 'rare',
@@ -431,13 +431,13 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     move: 2,
     range: 1,
     canCapture: true,
-    keywords: ['Regeneration', 'Trample'],
-    flavor: 'Ancient guardian of the primordial overgrowth.',
+    keywords: ['ฟื้นฟูพลังชีวิต', 'เหยียบย่ำ'],
+    flavor: 'ผู้พิทักษ์บรรพกาลแห่งพงไพรรกชัฏ ฟื้นตัวจากบาดแผลได้อย่างรวดเร็ว',
   },
 
   'MW-03': {
     id: 'MW-03',
-    name: 'Venomous Stalker',
+    name: 'นักล่าพิษเงียบ (Venomous Stalker)',
     universe: 'mythic-wilds',
     cardType: 'unit',
     rarity: 'common',
@@ -448,23 +448,23 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     move: 2,
     range: 2,
     canCapture: true,
-    keywords: ['Poison', 'Ambush'],
-    flavor: 'Spits corrosive venom that eats through tank hulls and wizard shields alike.',
+    keywords: ['พิษกัดกร่อน', 'ซุ่มโจมตี'],
+    flavor: 'พ่นพิษกัดกร่อนที่สามารถละลายเกราะเหล็กของรถถังและบาเรียเวทได้ในเสี้ยววินาที',
   },
 
   'MW-04': {
     id: 'MW-04',
-    name: 'Primal Roar',
+    name: 'เสียงคำรามบรรพกาล (Primal Roar)',
     universe: 'mythic-wilds',
     cardType: 'tactic',
     rarity: 'common',
     cost: { charge: 2 },
-    flavor: 'An ancient call echoing across the frontlines that stirs battle rage.',
+    flavor: 'เสียงกู่ร้องก้องกังวานปลุกสัญชาตญาณความกระหายเลือดในสนามรบ',
     abilities: [
       {
         id: 'ab-primal-buff',
-        name: 'Battle Surge',
-        description: 'Give all friendly units in target lane +2 Attack this turn.',
+        name: 'คลั่งศึก (Battle Surge)',
+        description: 'เพิ่มพลังโจมตี +2 Attack ให้ยูนิตฝ่ายเราทั้งหมดในเลนเป้าหมายในเทิร์นนี้',
         trigger: 'active',
         actionType: 'stat-buff',
         powerValue: 2,
@@ -474,15 +474,15 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
 
   'MW-05': {
     id: 'MW-05',
-    name: 'Spirit Totem',
+    name: 'เสาโทเท็มวิญญาณ (Spirit Totem)',
     universe: 'mythic-wilds',
     cardType: 'structure',
     rarity: 'uncommon',
     cost: { charge: 3 },
     health: 6,
     defense: 2,
-    keywords: ['Totem', 'Wild Ward'],
-    flavor: 'Wards the surrounding sector against incoming hostile fire.',
+    keywords: ['โทเท็ม', 'เขตแดนพงไพร'],
+    flavor: 'ปกป้องพื้นที่รอบข้างจากการโจมตีระยะไกลของศัตรู',
   },
 
   // ==========================================
@@ -490,17 +490,17 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
   // ==========================================
   'REL-01': {
     id: 'REL-01',
-    name: 'High-Frequency Vibro-Blade',
+    name: 'ดาบสั่นสะเทือนความถี่สูง (Vibro-Blade)',
     universe: 'neo-genesis',
     cardType: 'relic',
     rarity: 'uncommon',
     cost: { charge: 2 },
-    flavor: 'Attaches to a friendly melee unit, granting +2 Attack and +1 Movement.',
+    flavor: 'ติดตั้งให้ยูนิตระยะประชิด มอบพลังโจมตี +2 Attack และการเดิน +1 Movement',
     abilities: [
       {
         id: 'ab-vibro-blade',
-        name: 'Vibro Edge',
-        description: 'Target unit gains +2 Attack and +1 Move.',
+        name: 'คมดาบสั่นสะเทือน',
+        description: 'ยูนิตเป้าหมายได้รับ +2 Attack และ +1 Move',
         trigger: 'deploy',
         actionType: 'stat-buff',
         powerValue: 2,
@@ -510,47 +510,47 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
 
   'REL-02': {
     id: 'REL-02',
-    name: 'Rift Core Talisman',
+    name: 'เครื่องรางแกนริฟต์ (Rift Core Talisman)',
     universe: 'arcane-dominion',
     cardType: 'relic',
     rarity: 'rare',
     cost: { charge: 2, rift: 1 },
-    flavor: 'Condenses the multidimensional nexus to grant +1 Range and +3 Health.',
+    flavor: 'ผลึกรวมศูนย์เน็กซัส เพิ่มระยะยิง +1 Range และพลังชีวิต +3 Health',
   },
 
   'DOM-01': {
     id: 'DOM-01',
-    name: 'Dense Smoke Field',
+    name: 'ม่านควันหนาทึบ (Dense Smoke Field)',
     universe: 'iron-frontier',
     cardType: 'domain',
     rarity: 'uncommon',
     cost: { charge: 2 },
-    flavor: 'Deploys an impenetrable smokescreen granting +2 Cover defense in the lane.',
+    flavor: 'ทิ้งม่านควันกำบัง มอบเกราะป้องกันที่กำบัง +2 Cover Defense ในเลน',
   },
 
   // ==========================================
-  // 5. NEXUS PARTNERS (Commanders)
+  // 5. ผู้บัญชาการเน็กซัส (Nexus Partners)
   // ==========================================
   'PARTNER-01': {
     id: 'PARTNER-01',
-    name: 'General Vance, Iron Marshal',
+    name: 'จอมพล แวนซ์ (General Vance, Iron Marshal)',
     universe: 'iron-frontier',
     cardType: 'nexus-partner',
     rarity: 'legendary',
     cost: { charge: 0 },
-    flavor: 'Supreme commander of the Diesel Corps. Master of logistics and artillery.',
+    flavor: 'ผู้บัญชาการสูงสุดแห่งกองพลดีเซล ผู้เชี่ยวชาญการส่งกำลังบำรุงและปืนใหญ่ถล่มฐาน',
     abilities: [
       {
         id: 'p1-passive',
-        name: 'Armored Doctrine',
-        description: 'All friendly Iron Frontier units have +1 Defense.',
+        name: 'หลักนิยมยานเกราะ',
+        description: 'ยูนิตไอรอนฟรอนเทียร์ฝ่ายเราทั้งหมดได้รับเกราะ +1 Defense เสมอ',
         trigger: 'passive',
         actionType: 'stat-buff',
       },
       {
         id: 'p1-active',
-        name: 'Frontline Resupply',
-        description: 'Spend 2 Resolve to grant all friendly units in one lane +1 Attack.',
+        name: 'ส่งเสบียงแนวหน้า',
+        description: 'ใช้ 2 Resolve เพิ่มพลังโจมตี +1 Attack ให้ยูนิตทั้งหมดในเลนที่เลือก',
         trigger: 'active',
         actionType: 'stat-buff',
         cost: { charge: 0, resolve: 2 },
@@ -560,24 +560,24 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
 
   'PARTNER-02': {
     id: 'PARTNER-02',
-    name: 'High Magus Lyra',
+    name: 'จอมมหาเวท ไลรา (High Magus Lyra)',
     universe: 'arcane-dominion',
     cardType: 'nexus-partner',
     rarity: 'legendary',
     cost: { charge: 0 },
-    flavor: 'Keeper of the celestial gates, balancing reality across shattered dimensions.',
+    flavor: 'ผู้พิทักษ์ประตูดวงดาว คอยรักษาสมดุลความจริงข้ามมิติพหุภพที่แตกสลาย',
     abilities: [
       {
         id: 'p2-passive',
-        name: 'Rift Alignment',
-        description: 'Cross-universe cards cost 1 less Charge (minimum 1).',
+        name: 'ประสานมิติริฟต์',
+        description: 'การ์ดข้ามจักรวาลลดค่าใช้จ่ายลง 1 Charge (ขั้นต่ำ 1)',
         trigger: 'passive',
         actionType: 'stat-buff',
       },
       {
         id: 'p2-active',
-        name: 'Arcane Ward',
-        description: 'Spend 2 Rift to restore 5 Health to your Main Base.',
+        name: 'บาเรียเวทพิทักษ์เน็กซัส',
+        description: 'ใช้ 2 Rift ฟื้นฟูพลังชีวิต 5 หน่วยให้แก่เน็กซัสฐานทัพฝ่ายเรา',
         trigger: 'active',
         actionType: 'heal',
         cost: { charge: 0, rift: 2 },
@@ -587,17 +587,17 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
 
   'PARTNER-03': {
     id: 'PARTNER-03',
-    name: 'Unit 73-Cypher',
+    name: 'ยูนิต 73-ไซเฟอร์ (Unit 73-Cypher)',
     universe: 'neo-genesis',
     cardType: 'nexus-partner',
     rarity: 'legendary',
     cost: { charge: 0 },
-    flavor: 'Self-aware tactical combat network coordinating mechanized assets.',
+    flavor: 'โครงข่ายปัญญาประดิษฐ์ทางการทหารที่ควบคุมสรรพาวุธจักรกลในสนามรบ',
     abilities: [
       {
         id: 'p3-passive',
-        name: 'Overclock Grid',
-        description: 'Your structures generate +1 Charge during Economy Phase.',
+        name: 'เร่งกำลังโครงข่ายพลังงาน',
+        description: 'สิ่งก่อสร้างฝ่ายเราผลิต +1 Charge เพิ่มเติมในเฟสเศรษฐกิจ',
         trigger: 'turn-start',
         actionType: 'gain-resource',
       },
@@ -606,17 +606,17 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
 
   'PARTNER-04': {
     id: 'PARTNER-04',
-    name: 'Sylva, Primal Matriarch',
+    name: 'ซิลวา มารดาบรรพกาล (Sylva, Primal Matriarch)',
     universe: 'mythic-wilds',
     cardType: 'nexus-partner',
     rarity: 'legendary',
     cost: { charge: 0 },
-    flavor: 'Daughter of the dragon peaks, awakening dormant beasts across the frontlines.',
+    flavor: 'ธิดาแห่งยอดเขามังกร ผู้ปลุกอสูรหลับใหลให้ตื่นขึ้นมาร่วมรบ',
     abilities: [
       {
         id: 'p4-passive',
-        name: 'Wild Vigor',
-        description: 'Friendly units gain +1 Movement when in center or outer lanes.',
+        name: 'พลังพงไพร',
+        description: 'ยูนิตฝ่ายเราได้รับระยะเดิน +1 Movement ในเลนกลางและเลนข้าง',
         trigger: 'passive',
         actionType: 'stat-buff',
       },
@@ -624,36 +624,36 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
   },
 
   // ==========================================
-  // ORIGINS (Deck Identities)
+  // ORIGINS (สายกลยุทธ์ประจำเด็ค)
   // ==========================================
   'ORIGIN-01': {
     id: 'ORIGIN-01',
-    name: 'Siege Engineering Protocol',
+    name: 'หลักนิยมวิศวกรรมปิดล้อม (Siege Engineering Protocol)',
     universe: 'iron-frontier',
     cardType: 'origin',
     rarity: 'rare',
     cost: { charge: 0 },
-    flavor: 'Structures have +2 Max Health and cost 1 less Charge to deploy.',
+    flavor: 'สิ่งปลูกสร้างมีพลังชีวิตสูงสุด +2 HP และใช้ค่าใช้จ่ายลดลง 1 Charge',
   },
 
   'ORIGIN-02': {
     id: 'ORIGIN-02',
-    name: 'Multiverse Conductor',
+    name: 'สื่อนำมิติพหุภพ (Multiverse Conductor)',
     universe: 'arcane-dominion',
     cardType: 'origin',
     rarity: 'rare',
     cost: { charge: 0 },
-    flavor: 'Begin each match with +1 Rift in your reserve pool.',
+    flavor: 'เริ่มต้นการแข่งขันด้วยพลังงานริฟต์ +1 Rift ในคลังทันที',
   },
 
   'ORIGIN-03': {
     id: 'ORIGIN-03',
-    name: 'Cybernetic Blitz',
+    name: 'จู่โจมสายฟ้าแลบไซเบอร์ (Cybernetic Blitz)',
     universe: 'neo-genesis',
     cardType: 'origin',
     rarity: 'rare',
     cost: { charge: 0 },
-    flavor: 'Units deployed on Turn 1 or 2 receive +1 Move on their first turn.',
+    flavor: 'ยูนิตที่ส่งลงสนามในเทิร์น 1 หรือ 2 ได้รับโบนัสเคลื่อนที่ +1 Move ทันที',
   },
 };
 
@@ -662,43 +662,44 @@ export const UNIVERSE_CONFIG: Record<
   { name: string; color: string; badgeBg: string; border: string; accentText: string; desc: string }
 > = {
   'iron-frontier': {
-    name: 'Iron Frontier',
+    name: 'ไอรอนฟรอนเทียร์ (Iron Frontier)',
     color: '#f97316',
     badgeBg: 'bg-amber-950/40 text-amber-300 border-amber-700/50',
     border: 'border-amber-600/60',
     accentText: 'text-amber-400',
-    desc: 'Dieselpunk armored infantry, heavy tanks, combat airbases, and tactical artillery.',
+    desc: 'กองทัพดีเซลพังค์ ยานเกราะหนัก ทหารราบสนามเพลาะ ฐานทัพอากาศ และปืนใหญ่ถล่มฐาน',
   },
   'arcane-dominion': {
-    name: 'Arcane Dominion',
+    name: 'อาเค่นโดมิเนียน (Arcane Dominion)',
     color: '#a855f7',
     badgeBg: 'bg-purple-950/40 text-purple-300 border-purple-700/50',
     border: 'border-purple-600/60',
     accentText: 'text-purple-400',
-    desc: 'Mystic spellblades, dimensional blink sorcery, mana obelisks, and rift manipulation.',
+    desc: 'ดาบมนตรา จอมเวทเอเธอร์ เสาโอเบลิสก์ และเวทมนตร์เทเลพอร์ตข้ามมิติ',
   },
   'neo-genesis': {
-    name: 'Neo Genesis',
+    name: 'นีโอเจเนซิส (Neo Genesis)',
     color: '#06b6d4',
     badgeBg: 'bg-cyan-950/40 text-cyan-300 border-cyan-700/50',
     border: 'border-cyan-500/60',
     accentText: 'text-cyan-400',
-    desc: 'Cybernetic warriors, aerial recon drones, siege mechs, and nanite medical grids.',
+    desc: 'นักรบไซบอร์ก โดรนสอดแนม หุ่นยักษ์เรลกัน และโครงข่ายซ่อมแซมนาโนบอท',
   },
   'mythic-wilds': {
-    name: 'Mythic Wilds',
+    name: 'มายาไวลด์ส (Mythic Wilds)',
     color: '#10b981',
     badgeBg: 'bg-emerald-950/40 text-emerald-300 border-emerald-700/50',
     border: 'border-emerald-600/60',
     accentText: 'text-emerald-400',
-    desc: 'Apex dragons, primal behemoths, stealth venom stalkers, and ancient nature wards.',
+    desc: 'มังกรเวหา อสูรบรรพกาล นักล่าพิษ และพลังพงไพรที่ฟื้นฟูตัวเองได้',
   },
   'creators-circle': {
-    name: "Creator's Circle",
+    name: "ครีเอเตอร์เซอร์เคิล (Creator's Circle)",
     color: '#ec4899',
     badgeBg: 'bg-pink-950/40 text-pink-300 border-pink-700/50',
     border: 'border-pink-600/60',
     accentText: 'text-pink-400',
-    desc: 'Original player-created characters, customized abilities, and balanced custom heroes.',
+    desc: 'การ์ดและตัวละครสร้างสรรค์โดยผู้เล่น ปรับแต่งความสามารถพร้อมคำนวณสมดุลอัตโนมัติ',
   },
 };
+

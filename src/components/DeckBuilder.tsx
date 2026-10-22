@@ -65,12 +65,12 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
   const addCard = (cardId: string) => {
     const count = cardCounts[cardId] || 0;
     if (count >= 4) {
-      setNotification(`Maximum 4 copies allowed for ${allCardsMap[cardId]?.name || 'this card'}.`);
+      setNotification(`ใส่การ์ดได้สูงสุด 4 ใบต่อชนิดสำหรับ ${allCardsMap[cardId]?.name || 'การ์ดนี้'}`);
       setTimeout(() => setNotification(null), 2500);
       return;
     }
     if (deck.cardIds.length >= 50) {
-      setNotification('Deck cannot exceed 50 cards.');
+      setNotification('เด็คต้องมีขนาดสูงสุดไม่เกิน 50 ใบ');
       setTimeout(() => setNotification(null), 2500);
       return;
     }
@@ -98,7 +98,7 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
   const loadPreset = (preset: DeckConfig) => {
     soundFx.playDeploy();
     setDeck({ ...preset });
-    setNotification(`Loaded "${preset.name}" preset.`);
+    setNotification(`โหลดชุดเด็คสำเร็จรูป "${preset.name}" แล้ว`);
     setTimeout(() => setNotification(null), 2000);
   };
 
@@ -118,7 +118,7 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
       if (Array.isArray(parsed.cardIds) && parsed.cardIds.length === 50) {
         setDeck({
           id: parsed.id || `custom-deck-${Date.now()}`,
-          name: parsed.name || 'Imported Deck',
+          name: parsed.name || 'เด็คนำเข้า',
           partnerId: parsed.partnerId || 'PARTNER-01',
           originId: parsed.originId || 'ORIGIN-01',
           universes: parsed.universes || ['iron-frontier'],
@@ -126,13 +126,13 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
           isCustom: true,
         });
         setShowImportModal(false);
-        setNotification('Deck imported successfully!');
+        setNotification('นำเข้าเด็คสำเร็จเรียบร้อย!');
         setTimeout(() => setNotification(null), 2000);
       } else {
-        alert('Invalid deck JSON: Deck must contain exactly 50 cardIds array.');
+        alert('โครงสร้าง JSON ของเด็คไม่ถูกต้อง: เด็คต้องมีอาเรย์ cardIds ครบ 50 ใบพอดี');
       }
     } catch (e) {
-      alert('Failed to parse JSON string.');
+      alert('ไม่สามารถอ่านไฟล์ JSON ได้ กรุณาตรวจสอบรูปแบบข้อความ');
     }
   };
 
@@ -142,17 +142,17 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
       <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4 gap-4 flex-wrap">
         <div>
           <h2 className="font-display text-xl font-bold text-slate-100 flex items-center gap-2">
-            <Layers className="w-5 h-5 text-cyan-400" /> Deck Architect Studio
+            <Layers className="w-5 h-5 text-cyan-400" /> สตูดิโอจัดเด็คสถาปนิก (Deck Architect Studio)
           </h2>
           <p className="text-xs text-slate-400">
-            Build your 50-card multiverse tactical battle deck. Max 4 copies per card.
+            ปรับแต่งเด็คต่อสู้ทางยุทธวิธีมัลติเวิร์สขนาด 50 ใบ (ใส่การ์ดซ้ำได้สูงสุด 4 ใบต่อชนิด)
           </p>
         </div>
 
         {/* Quick starter decks dropdown & actions */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-lg border border-slate-800 text-xs text-slate-300">
-            <span>Preset:</span>
+            <span>เด็คสำเร็จรูป:</span>
             {STARTER_DECKS.map((preset) => (
               <button
                 key={preset.id}
@@ -168,14 +168,14 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
             onClick={exportJson}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs border border-slate-700 transition-colors"
           >
-            <Download className="w-3.5 h-3.5" /> Export JSON
+            <Download className="w-3.5 h-3.5" /> ส่งออก JSON
           </button>
 
           <button
             onClick={() => setShowImportModal(true)}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs border border-slate-700 transition-colors"
           >
-            <Upload className="w-3.5 h-3.5" /> Import
+            <Upload className="w-3.5 h-3.5" /> นำเข้าเด็ค
           </button>
 
           <button
@@ -191,7 +191,7 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
                 : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
             }`}
           >
-            <Check className="w-4 h-4" /> Save Deck & Return
+            <Check className="w-4 h-4" /> บันทึกเด็คและกลับ
           </button>
         </div>
       </div>
@@ -213,7 +213,7 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
               <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search cards by name or keyword..."
+                placeholder="ค้นหาการ์ดตามชื่อหรือความสามารถ..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
@@ -230,7 +230,7 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
                     : 'bg-slate-900 text-slate-400 hover:text-slate-200'
                 }`}
               >
-                All Universes
+                ทุกจักรวาล
               </button>
               {(Object.keys(UNIVERSE_CONFIG) as Universe[]).map((u) => {
                 const conf = UNIVERSE_CONFIG[u];
@@ -272,25 +272,32 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
                   </div>
 
                   <div className="text-[10px] text-slate-400 capitalize mb-1">
-                    {card.cardType} · {card.universe.split('-')[0]}
+                    {card.cardType === 'unit'
+                      ? 'ยูนิต'
+                      : card.cardType === 'structure'
+                      ? 'ป้อมปราการ'
+                      : card.cardType === 'tactic'
+                      ? 'ยุทธวิธี'
+                      : 'วัตถุโบราณ'}{' '}
+                    · {card.universe.split('-')[0]}
                   </div>
 
                   {card.cardType === 'unit' ? (
                     <div className="flex items-center justify-between text-[10px] font-mono-nums text-slate-300 pt-1 border-t border-slate-800">
-                      <span className="text-rose-400 font-bold">{card.attack} ATK</span>
-                      <span className="text-emerald-400 font-bold">{card.health} HP</span>
-                      <span className="text-sky-400 font-bold">{card.defense} DEF</span>
+                      <span className="text-rose-400 font-bold">{card.attack} ตี</span>
+                      <span className="text-emerald-400 font-bold">{card.health} เลือด</span>
+                      <span className="text-sky-400 font-bold">{card.defense} เกราะ</span>
                     </div>
                   ) : (
                     <div className="text-[10px] text-cyan-300 truncate pt-1 border-t border-slate-800">
-                      {card.abilities?.[0]?.name || card.keywords?.[0] || 'Tactic'}
+                      {card.abilities?.[0]?.name || card.keywords?.[0] || 'การ์ดยุทธวิธี'}
                     </div>
                   )}
 
                   {/* Add / Count controls overlay */}
                   <div className="mt-2 pt-1 border-t border-slate-800/60 flex items-center justify-between">
                     <span className="text-[10px] font-mono-nums font-bold text-slate-400">
-                      {countInDeck}/4 in deck
+                      ในเด็ค: {countInDeck}/4
                     </span>
                     <div className="flex items-center gap-1">
                       <button
@@ -326,7 +333,7 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
           {/* Deck Validation Bar */}
           <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 mb-3">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-bold text-slate-200">Deck Capacity</span>
+              <span className="text-xs font-bold text-slate-200">ความจุเด็ค</span>
               <span
                 className={`font-mono-nums text-sm font-bold ${
                   totalCards === 50
@@ -336,7 +343,7 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
                     : 'text-rose-400'
                 }`}
               >
-                {totalCards} / 50 Cards
+                {totalCards} / 50 ใบ
               </span>
             </div>
 
@@ -356,8 +363,8 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
             {totalCards !== 50 && (
               <div className="text-[10px] text-amber-300 mt-1">
                 {totalCards < 50
-                  ? `Need ${50 - totalCards} more cards for legal ranked battle.`
-                  : `Please remove ${totalCards - 50} cards.`}
+                  ? `ต้องการการ์ดเพิ่มอีก ${50 - totalCards} ใบเพื่อเข้าร่วมการแข่งขัน`
+                  : `กรุณานำการ์ดออก ${totalCards - 50} ใบ`}
               </div>
             )}
           </div>
@@ -366,7 +373,7 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
           <div className="grid grid-cols-2 gap-2 mb-3">
             <div>
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                Nexus Partner
+                คู่หูเน็กซัส (Nexus Partner)
               </label>
               <select
                 value={deck.partnerId}
@@ -383,7 +390,7 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
 
             <div>
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                Deck Origin
+                จุดกำเนิดเด็ค (Deck Origin)
               </label>
               <select
                 value={deck.originId}
@@ -401,7 +408,7 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
 
           {/* Cards currently in deck list */}
           <div className="text-xs font-bold text-slate-300 mb-1 flex items-center justify-between">
-            <span>Current Card List ({Object.keys(cardCounts).length} unique)</span>
+            <span>รายการการ์ดในเด็ค ({Object.keys(cardCounts).length} แบบ)</span>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-1 pr-1">
@@ -432,7 +439,7 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
                       }}
                       className="w-5 h-5 rounded bg-slate-800 hover:bg-rose-950 hover:text-rose-400 text-slate-400 flex items-center justify-center"
                     >
-                      <Minus className="w-3 h-3" />
+                        <Minus className="w-3 h-3" />
                     </button>
                     <button
                       onClick={(e) => {
@@ -465,7 +472,7 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
                 onClick={() => setInspectedCard(null)}
                 className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300"
               >
-                Close Inspector
+                ปิดหน้าต่างตรวจสอบ
               </button>
             </div>
           </div>
@@ -476,12 +483,12 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
       {showImportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 max-w-lg w-full">
-            <h3 className="text-sm font-bold text-slate-100 mb-2">Import Deck JSON</h3>
+            <h3 className="text-sm font-bold text-slate-100 mb-2">นำเข้าเด็คด้วยโค้ด JSON</h3>
             <textarea
               rows={8}
               value={importJsonText}
               onChange={(e) => setImportJsonText(e.target.value)}
-              placeholder="Paste exported deck JSON here..."
+              placeholder="วางโค้ด JSON ของเด็คที่ส่งออกมาที่นี่..."
               className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500"
             />
             <div className="flex justify-end gap-2 mt-3">
@@ -489,13 +496,13 @@ export const DeckBuilder: React.FC<DeckBuilderProps> = ({
                 onClick={() => setShowImportModal(false)}
                 className="px-3 py-1.5 rounded bg-slate-800 text-xs text-slate-400"
               >
-                Cancel
+                ยกเลิก
               </button>
               <button
                 onClick={handleImportJson}
                 className="px-4 py-1.5 rounded bg-cyan-600 hover:bg-cyan-500 text-xs font-bold text-white"
               >
-                Load Deck
+                โหลดเด็ค
               </button>
             </div>
           </div>

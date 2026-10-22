@@ -1,6 +1,6 @@
 {
-  "name": "RIFTBOUND: Frontline Nexus",
-  "description": "Multiverse tactical card strategy game combining freeform deckbuilding across dieselpunk, arcane, cyber, and mythic universes with three-lane grid warfare and outpost conquest.",
+  "name": "RIFTBOUND: แนวรบเน็กซัส (Frontline Nexus)",
+  "description": "เกมการ์ดวางแผนยุทธวิธีข้ามพหุภพ ผสมผสานการสร้างเด็คอิสระ สมรภูมิตาราง 3 เลน และการยึดครองจุดยุทธศาสตร์",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -13,10 +13,10 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
         <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
           <div>
             <h2 className="font-display font-bold text-lg text-slate-100">
-              Architect Tactical Field Manual
+              คู่มือยุทธวิธีสถาปนิก (Architect Tactical Field Manual)
             </h2>
             <div className="text-xs text-slate-400">
-              Rules of engagement for RIFTBOUND: Frontline Nexus
+              กฎการรบแห่งสมรภูมิ RIFTBOUND: Frontline Nexus (ริฟต์บาวด์: แนวรบเน็กซัส)
             </div>
           </div>
           <button
@@ -32,87 +32,87 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
           {/* Section 1: Objective */}
           <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
             <h3 className="font-bold text-slate-100 text-sm flex items-center gap-2">
-              <Crosshair className="w-4 h-4 text-rose-400" /> Primary Objective
+              <Crosshair className="w-4 h-4 text-rose-400" /> เป้าหมายหลัก (Primary Objective)
             </h3>
             <p>
-              Both players command a Main Base Nexus with <strong className="text-slate-100">30 Nexus Integrity</strong>. Deploy units across three lanes, advance toward the enemy base, and demolish their nexus to win the battle.
+              ผู้เล่นทั้งสองฝ่ายบัญชาการฐานเน็กซัสที่มีพลังชีวิต <strong className="text-slate-100">30 หน่วย</strong> จัดวางกำลังพลข้าม 3 เลน เดินทัพบุกทะลวงฐานทัพศัตรู และทำลายเน็กซัสของฝ่ายตรงข้ามให้เหลือ 0 เพื่อคว้าชัยชนะ
             </p>
           </div>
 
           {/* Section 2: Three Lanes & Battlefield Depth */}
           <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
             <h3 className="font-bold text-slate-100 text-sm flex items-center gap-2">
-              <Navigation className="w-4 h-4 text-cyan-400" /> Three-Lane Tactical Grid
+              <Navigation className="w-4 h-4 text-cyan-400" /> ตารางยุทธวิธี 3 เลน (Three-Lane Tactical Grid)
             </h3>
             <p>
-              The arena has 3 columns (Left, Center, Right) and 7 depth rows:
+              สมรภูมิประกอบด้วย 3 เลน (เลนซ้าย, เลนกลาง, เลนขวา) และมีความลึก 7 แถว:
             </p>
             <ul className="list-disc pl-4 space-y-1 text-slate-400">
-              <li><strong className="text-slate-200">Row 0:</strong> Opponent Base Zone</li>
-              <li><strong className="text-slate-200">Rows 1 & 5:</strong> Rear Deployment Zones for defensive structures and Airbases</li>
-              <li><strong className="text-slate-200">Row 3:</strong> The Contested Frontline containing 3 strategic Outposts</li>
-              <li><strong className="text-slate-200">Row 6:</strong> Player Base Zone</li>
-              <li>Units advance and retreat along their lane. Units in middle rows (2, 3, 4) or flying units can transition between adjacent lanes.</li>
+              <li><strong className="text-slate-200">แถว 0:</strong> โซนฐานทัพฝ่ายตรงข้าม (Nexus ศัตรู)</li>
+              <li><strong className="text-slate-200">แถว 1 และ 5:</strong> โซนแนวหลังสำหรับสิ่งปลูกสร้างป้องกันและฐานบินทัพอากาศ (Airbase)</li>
+              <li><strong className="text-slate-200">แถว 3:</strong> แนวรบส่วนหน้าที่มีฐานยุทธศาสตร์ (Outpost) สำคัญ 3 แห่ง</li>
+              <li><strong className="text-slate-200">แถว 6:</strong> โซนฐานทัพหลักของผู้เล่น (Nexus ของเรา)</li>
+              <li>ยูนิตสามารถเดินหน้าหรือถอยร่นตามแนวเลน ยูนิตในแถวกลาง (แถว 2, 3, 4) หรือยูนิตที่มีความสามารถบิน สามารถเปลี่ยนข้ามเลนที่ติดกันได้</li>
             </ul>
           </div>
 
           {/* Section 3: Strategic Outposts */}
           <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
             <h3 className="font-bold text-slate-100 text-sm flex items-center gap-2">
-              <Flag className="w-4 h-4 text-amber-400" /> Outpost Capture System
+              <Flag className="w-4 h-4 text-amber-400" /> ระบบยึดครองฐานยุทธศาสตร์ (Outpost Capture System)
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <div className="p-2 rounded bg-slate-950 border border-slate-800">
                 <div className="font-bold text-amber-400 flex items-center gap-1">
-                  <Zap className="w-3.5 h-3.5" /> Supply Outpost
+                  <Zap className="w-3.5 h-3.5" /> ฐานส่งกำลังบำรุง
                 </div>
                 <div className="text-[11px] text-slate-400 mt-0.5">
-                  Left Lane. Generates +1 Charge every round for controller.
+                  เลนซ้าย. ผลิตประจุไฟฟ้า +1 Charge ในทุกรอบแก่ผู้ควบคุม
                 </div>
               </div>
 
               <div className="p-2 rounded bg-slate-950 border border-slate-800">
                 <div className="font-bold text-sky-400 flex items-center gap-1">
-                  <Shield className="w-3.5 h-3.5" /> Fortress Outpost
+                  <Shield className="w-3.5 h-3.5" /> ฐานป้อมปราการ
                 </div>
                 <div className="text-[11px] text-slate-400 mt-0.5">
-                  Center Lane. Grants +2 Defense aura to all friendly units in lane.
+                  เลนกลาง. มอบออร่าเกราะป้องกัน +2 Defense แก่ยูนิตฝ่ายเราในเลนนี้
                 </div>
               </div>
 
               <div className="p-2 rounded bg-slate-950 border border-slate-800">
                 <div className="font-bold text-purple-400 flex items-center gap-1">
-                  <Radio className="w-3.5 h-3.5" /> Relay Outpost
+                  <Radio className="w-3.5 h-3.5" /> ฐานรีเลย์มิติ
                 </div>
                 <div className="text-[11px] text-slate-400 mt-0.5">
-                  Right Lane. Generates +1 Rift Energy every round.
+                  เลนขวา. ผลิตพลังงานมิติริฟต์ +1 Rift Energy ทุกรอบ
                 </div>
               </div>
             </div>
             <p className="text-[11px] text-slate-400">
-              To capture: Move a unit with <strong className="text-slate-200">canCapture</strong> onto the outpost. If uncontested, capture progress fills to 100%. If enemy units are nearby, the outpost becomes contested and suspends rewards.
+              วิธียึดครอง: สั่งยูนิตที่มีสัญลักษณ์ <strong className="text-slate-200">ยึดจุดยุทธศาสตร์</strong> เดินขึ้นบนช่องฐาน หากไม่มีศัตรูขัดขวาง ความคืบหน้าจะเต็ม 100% หากมีศัตรูอยู่ใกล้เคียง ฐานจะติดสถานะช่วงชิง (Contested) และระงับผลประโยชน์ชั่วคราว
             </p>
           </div>
 
           {/* Section 4: Airborne Deployment Scenario */}
           <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
             <h3 className="font-bold text-slate-100 text-sm flex items-center gap-2">
-              <Plane className="w-4 h-4 text-amber-300" /> Airbase & Airborne Deployment
+              <Plane className="w-4 h-4 text-amber-300" /> ฐานบินทัพอากาศและการทิ้งร่ม (Airborne Deployment)
             </h3>
             <p>
-              Constructing a <strong className="text-amber-300">Tactical Airbase</strong> in your rear zone unlocks the Airborne Drop protocol. Spend 3 Charge + 1 Rift to paradrop a squad of <strong className="text-slate-100">Airborne Paratroopers</strong> directly into any Outpost or backline landing zone to immediately contest objectives!
+              การสร้าง <strong className="text-amber-300">ฐานบินทัพอากาศยุทธวิธี (Tactical Airbase)</strong> ที่แนวหลังจะปลดล็อกโปรโตคอลทิ้งร่ม ใช้พลังงาน 3 Charge + 1 Rift เพื่อส่งกองกำลัง <strong className="text-slate-100">พลร่มจู่โจมทางอากาศ</strong> ลงสู่ฐานยุทธศาสตร์หรือแนวหลังศัตรูได้โดยตรงเพื่อเข้าประจัญบานทันที!
             </p>
           </div>
 
           {/* Section 5: The Three Resources */}
           <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
             <h3 className="font-bold text-slate-100 text-sm flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-400" /> Resource Economy
+              <Zap className="w-4 h-4 text-amber-400" /> เศรษฐกิจและทรัพยากรทั้ง 3 ประเภท (Resource Economy)
             </h3>
             <ul className="list-disc pl-4 space-y-1 text-slate-400">
-              <li><strong className="text-amber-300">⚡ Charge:</strong> Primary resource for deploying units, tactics, and structures (+2 per turn up to 10).</li>
-              <li><strong className="text-purple-300">🌀 Rift:</strong> Dimensional resource from Relay Outposts & Arcane cards used for cross-universe abilities and airdrops.</li>
-              <li><strong className="text-sky-300">🛡️ Resolve:</strong> Defensive stamina used for reactions and commander abilities.</li>
+              <li><strong className="text-amber-300">⚡ ประจุไฟฟ้า (Charge):</strong> ทรัพยากรหลักสำหรับจัดวางยูนิต สิ่งปลูกสร้าง และยุทธวิธี (+2 หน่วยต่อเทิร์น สะสมได้สูงสุด 10 หน่วย)</li>
+              <li><strong className="text-purple-300">🌀 พลังริฟต์ (Rift):</strong> ทรัพยากรมิติจากฐานรีเลย์มิติและการ์ดอาร์เคน ใช้สำหรับสกิลข้ามจักรวาลและการทิ้งร่ม</li>
+              <li><strong className="text-sky-300">🛡️ ความมุ่งมั่น (Resolve):</strong> พลังใจเชิงป้องกันสำหรับใช้ในปฏิกิริยาตอบโต้และคำสั่งผู้บัญชาการ</li>
             </ul>
           </div>
         </div>
