@@ -1,14 +1,16 @@
 import React from 'react';
-import { GameState, TerrainCell, UnitInstance, StructureInstance, OutpostState } from '../types/game';
-import { Shield, Swords, Heart, Flag, Navigation, Plane, AlertTriangle, Zap, Radio, Castle, Crosshair } from 'lucide-react';
-import { UNIVERSE_CONFIG } from '../data/cards';
+import { GameState, TerrainCell, UnitInstance, StructureInstance, OutpostState, Lane } from '../types/game';
+import { Shield, Swords, Heart, Flag, Navigation, Plane, AlertTriangle, Zap, Radio, Castle, Crosshair, Target } from 'lucide-react';
+import { UNIVERSE_CONFIG, CARD_DATABASE } from '../data/cards';
 import { getCellId } from '../game/battlefield';
+import { CardArtwork } from './CardArtwork';
 
 interface BattlefieldViewProps {
   state: GameState;
   onCellClick: (cellId: string) => void;
   onUnitClick: (unit: UnitInstance) => void;
   onAirbaseDropClick: (structure: StructureInstance) => void;
+  onLaneClick?: (lane: Lane) => void;
   canPerformAirborneDrop: boolean;
   selectedAirbase: StructureInstance | null;
 }
@@ -18,10 +20,32 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
   onCellClick,
   onUnitClick,
   onAirbaseDropClick,
+  onLaneClick,
   canPerformAirborneDrop,
   selectedAirbase,
 }) => {
-  const { cells, units, structures, outposts, selectedCellId, selectedUnitId, reachableCellIds, attackableCellIds, airborneLandingCellIds, actionMode } = state;
+  const {
+    cells,
+    units,
+    structures,
+    outposts,
+    selectedCellId,
+    selectedUnitId,
+    reachableCellIds,
+    attackableCellIds,
+    airborneLandingCellIds,
+    validTargetCellIds,
+    actionMode,
+    selectedCardInstanceId,
+  } = state;
+
+  const isCardTargeting = actionMode === 'card-targeting';
+  const selectedCardDef = selectedCardInstanceId
+    ? CARD_DATABASE[
+        state.player1.hand.find((c) => c.instanceId === selectedCardInstanceId)?.definitionId || ''
+      ]
+    : null;
+  const isLaneTargeting = isCardTargeting && selectedCardDef?.targetRule?.mode === 'lane';
 
   return (
     <div className="relative flex flex-col items-center w-full max-w-4xl mx-auto rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl p-4 overflow-hidden select-none">
@@ -69,17 +93,52 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
         </div>
       </div>
 
-      {/* LANE TITLES */}
+      {/* LANE TITLES / LANE TARGETING BUTTONS */}
       <div className="relative z-10 grid grid-cols-3 gap-3 w-full mb-2 text-center text-xs font-semibold tracking-wider uppercase text-slate-400">
-        <div className="py-1 rounded bg-slate-900/60 border border-slate-800 flex items-center justify-center gap-1.5 text-amber-400">
-          <Zap className="w-3.5 h-3.5" /> เลนซ้าย · เสบียงส่งกำลังบำรุง
-        </div>
-        <div className="py-1 rounded bg-slate-900/60 border border-slate-800 flex items-center justify-center gap-1.5 text-sky-400">
-          <Castle className="w-3.5 h-3.5" /> เลนกลาง · ป้อมปราการมั่นคง
-        </div>
-        <div className="py-1 rounded bg-slate-900/60 border border-slate-800 flex items-center justify-center gap-1.5 text-purple-400">
-          <Radio className="w-3.5 h-3.5" /> เลนขวา · รีเลย์มิติริฟต์
-        </div>
+        <button
+          type="button"
+          disabled={!isLaneTargeting}
+          onClick={() => onLaneClick && onLaneClick('left')}
+          className={`py-1.5 px-2 rounded border flex items-center justify-center gap-1.5 transition-all ${
+            isLaneTargeting
+              ? 'bg-purple-900/60 hover:bg-purple-800/90 text-purple-200 border-purple-400 ring-2 ring-purple-400/80 cursor-pointer animate-pulse'
+              : 'bg-slate-900/60 border-slate-800 text-amber-400'
+          }`}
+        >
+          <Zap className="w-3.5 h-3.5" />
+          <span>เลนซ้าย · เสบียง</span>
+          {isLaneTargeting ? <span className="text-[9px] bg-purple-500 text-white px-1.5 rounded ml-1 font-bold">เลือกเลนนี้</span> : null}
+        </button>
+
+        <button
+          type="button"
+          disabled={!isLaneTargeting}
+          onClick={() => onLaneClick && onLaneClick('center')}
+          className={`py-1.5 px-2 rounded border flex items-center justify-center gap-1.5 transition-all ${
+            isLaneTargeting
+              ? 'bg-purple-900/60 hover:bg-purple-800/90 text-purple-200 border-purple-400 ring-2 ring-purple-400/80 cursor-pointer animate-pulse'
+              : 'bg-slate-900/60 border-slate-800 text-sky-400'
+          }`}
+        >
+          <Castle className="w-3.5 h-3.5" />
+          <span>เลนกลาง · ป้อมมั่นคง</span>
+          {isLaneTargeting ? <span className="text-[9px] bg-purple-500 text-white px-1.5 rounded ml-1 font-bold">เลือกเลนนี้</span> : null}
+        </button>
+
+        <button
+          type="button"
+          disabled={!isLaneTargeting}
+          onClick={() => onLaneClick && onLaneClick('right')}
+          className={`py-1.5 px-2 rounded border flex items-center justify-center gap-1.5 transition-all ${
+            isLaneTargeting
+              ? 'bg-purple-900/60 hover:bg-purple-800/90 text-purple-200 border-purple-400 ring-2 ring-purple-400/80 cursor-pointer animate-pulse'
+              : 'bg-slate-900/60 border-slate-800 text-purple-400'
+          }`}
+        >
+          <Radio className="w-3.5 h-3.5" />
+          <span>เลนขวา · รีเลย์มิติ</span>
+          {isLaneTargeting ? <span className="text-[9px] bg-purple-500 text-white px-1.5 rounded ml-1 font-bold">เลือกเลนนี้</span> : null}
+        </button>
       </div>
 
       {/* 3-LANE BATTLEFIELD GRID (7 Rows x 3 Cols) */}
@@ -98,21 +157,33 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
               const isReachable = reachableCellIds.includes(cellId);
               const isAttackable = attackableCellIds.includes(cellId);
               const isAirborneTarget = airborneLandingCellIds.includes(cellId);
+              const isCardTarget = isCardTargeting && (validTargetCellIds?.includes(cellId) ?? false);
+              const isDimmed = isCardTargeting && !isCardTarget;
               const isSelected = selectedCellId === cellId || (unit && selectedUnitId === unit.id);
 
               return (
                 <div
                   key={cellId}
                   onClick={() => {
+                    if (isCardTargeting) {
+                      if (isCardTarget) {
+                        onCellClick(cellId);
+                      }
+                      return;
+                    }
                     if (unit && unit.owner === state.activePlayerId && actionMode !== 'attack') {
                       onUnitClick(unit);
                     } else {
                       onCellClick(cellId);
                     }
                   }}
-                  className={`relative min-h-[72px] sm:min-h-[82px] rounded-lg p-1.5 flex flex-col justify-between transition-all duration-200 cursor-pointer border ${
+                  className={`relative min-h-[76px] sm:min-h-[86px] rounded-lg p-1.5 flex flex-col justify-between transition-all duration-200 cursor-pointer border ${
                     // Highlight states
-                    isAttackable
+                    isCardTarget
+                      ? 'border-purple-400 bg-purple-950/50 ring-2 ring-purple-400/90 shadow-lg shadow-purple-950 animate-pulse z-20 scale-[1.02]'
+                      : isDimmed
+                      ? 'opacity-35 grayscale-40 border-slate-800/60 bg-slate-950/40'
+                      : isAttackable
                       ? 'border-rose-500 bg-rose-950/40 ring-2 ring-rose-500/70 shadow-lg shadow-rose-950 animate-pulse'
                       : isAirborneTarget
                       ? 'border-amber-400 bg-amber-950/40 ring-2 ring-amber-400/80 shadow-lg shadow-amber-950 animate-pulse'
@@ -153,7 +224,11 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
                     ) : null}
 
                     {/* Targeting Indicators */}
-                    {isAttackable ? (
+                    {isCardTarget ? (
+                      <span className="text-purple-300 font-bold flex items-center gap-0.5 uppercase tracking-wider text-[9px] bg-purple-950/80 px-1 rounded border border-purple-500/50">
+                        <Target className="w-2.5 h-2.5 text-purple-400" /> เป้าหมาย
+                      </span>
+                    ) : isAttackable ? (
                       <span className="text-rose-400 font-bold flex items-center gap-0.5 uppercase tracking-wider text-[9px]">
                         <Crosshair className="w-3 h-3" /> โจมตี
                       </span>
@@ -179,39 +254,51 @@ export const BattlefieldView: React.FC<BattlefieldViewProps> = ({
                             : 'bg-rose-950/70 border-rose-600/70 text-rose-100 shadow-md shadow-rose-950'
                         }`}
                       >
-                        {/* Unit Name & Faction */}
-                        <div className="flex items-center justify-between gap-1">
-                          <span className="text-[11px] font-bold truncate leading-tight">
-                            {unit.name}
-                          </span>
-                          {unit.canCapture ? (
-                            <span title="สามารถยึดจุดยุทธศาสตร์ได้" className="shrink-0">
-                              <Flag className="w-3 h-3 text-amber-400" />
-                            </span>
-                          ) : null}
-                        </div>
-
-                        {/* Health Bar */}
-                        <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden my-1">
-                          <div
-                            className={`h-full rounded-full ${
-                              unit.owner === 'player1' ? 'bg-sky-400' : 'bg-rose-500'
-                            }`}
-                            style={{
-                              width: `${Math.max(0, (unit.currentHealth / unit.maxHealth) * 100)}%`,
-                            }}
-                          />
+                        {/* Unit Mini Artwork + Name + Capturer Flag */}
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-7 h-7 rounded overflow-hidden bg-slate-950 border border-slate-700/80 shrink-0 shadow-xs">
+                            <CardArtwork
+                              cardId={unit.definitionId}
+                              universe={unit.universe}
+                              cardType="unit"
+                              mini
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="text-[10px] font-bold truncate leading-tight">
+                                {unit.name.split(' (')[0]}
+                              </span>
+                              {unit.canCapture ? (
+                                <span title="สามารถยึดจุดยุทธศาสตร์ได้" className="shrink-0">
+                                  <Flag className="w-2.5 h-2.5 text-amber-400" />
+                                </span>
+                              ) : null}
+                            </div>
+                            {/* Health Bar */}
+                            <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden my-0.5 border border-slate-800">
+                              <div
+                                className={`h-full rounded-full transition-all duration-300 ${
+                                  unit.owner === 'player1' ? 'bg-sky-400' : 'bg-rose-500'
+                                }`}
+                                style={{
+                                  width: `${Math.max(0, (unit.currentHealth / unit.maxHealth) * 100)}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
                         </div>
 
                         {/* Unit Stats */}
-                        <div className="flex items-center justify-between text-[10px] font-mono-nums font-bold">
-                          <span className="flex items-center gap-0.5 text-rose-300">
+                        <div className="flex items-center justify-between text-[10px] font-mono-nums font-bold mt-1 pt-0.5 border-t border-slate-800/80">
+                          <span className="flex items-center gap-0.5 text-rose-300" title="พลังโจมตี">
                             <Swords className="w-2.5 h-2.5" /> {unit.attack}
                           </span>
-                          <span className="flex items-center gap-0.5 text-emerald-300">
+                          <span className="flex items-center gap-0.5 text-emerald-300" title="พลังชีวิต">
                             <Heart className="w-2.5 h-2.5" /> {unit.currentHealth}/{unit.maxHealth}
                           </span>
-                          <span className="flex items-center gap-0.5 text-sky-300">
+                          <span className="flex items-center gap-0.5 text-sky-300" title="เกราะ">
                             <Shield className="w-2.5 h-2.5" /> {unit.defense}
                           </span>
                           <span className="flex items-center gap-0.5 text-amber-300" title="การเดินที่เหลือ">

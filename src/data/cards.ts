@@ -141,6 +141,12 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     cardType: 'tactic',
     rarity: 'rare',
     cost: { charge: 4 },
+    playMode: 'cast-spell',
+    targetRule: {
+      mode: 'lane',
+      promptText: 'เลือกเลนเป้าหมายเพื่อทิ้งระเบิดปูพรม (Carpet Bombing)',
+      powerValue: 3,
+    },
     flavor: 'ฝูงบินทิ้งระเบิดหนักโปรยระเบิดทำลายล้างครอบคลุมทั้งเลน',
     abilities: [
       {
@@ -231,6 +237,12 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     cardType: 'tactic',
     rarity: 'uncommon',
     cost: { charge: 2, rift: 1 },
+    playMode: 'cast-spell',
+    targetRule: {
+      mode: 'friendly-unit',
+      promptText: 'เลือกยูนิตฝ่ายเราเพื่อเปิดริฟต์เทเลพอร์ต',
+      powerValue: 3,
+    },
     flavor: 'พับกาลอวกาศเพื่อเคลื่อนย้ายยูนิตพันธมิตรในพริบตา',
     abilities: [
       {
@@ -654,6 +666,243 @@ export const CARD_DATABASE: Record<string, CardDefinition> = {
     rarity: 'rare',
     cost: { charge: 0 },
     flavor: 'ยูนิตที่ส่งลงสนามในเทิร์น 1 หรือ 2 ได้รับโบนัสเคลื่อนที่ +1 Move ทันที',
+  },
+
+  // ==========================================
+  // TACTICAL SPELLS & RIFT POWERS (เวทมนตร์และกลยุทธ์ยุทธวิธี)
+  // ==========================================
+  'SPELL-HEAL': {
+    id: 'SPELL-HEAL',
+    name: 'ชีพจรเยียวยา (Healing Pulse)',
+    universe: 'arcane-dominion',
+    cardType: 'spell',
+    rarity: 'common',
+    cost: { charge: 2 },
+    playMode: 'cast-spell',
+    targetRule: {
+      mode: 'friendly-unit',
+      ownership: 'friendly',
+      promptText: 'เลือกยูนิตฝ่ายเราเพื่อฟื้นฟูพลังชีวิต +3 HP',
+      effectType: 'heal',
+      powerValue: 3,
+    },
+    flavor: 'คลื่นพลังงานฟื้นฟูชีวาแผ่กระจายเชื่อมโยงบาดแผลของนักรบให้ผสานเข้าด้วยกันทันตา',
+    abilities: [
+      {
+        id: 'ab-heal-pulse',
+        name: 'เยียวยาสมานแผล',
+        description: 'ฟื้นฟูพลังชีวิต 3 HP ให้แก่ยูนิตฝ่ายเราที่เลือก',
+        trigger: 'active',
+        actionType: 'heal',
+        powerValue: 3,
+      },
+    ],
+  },
+
+  'SPELL-BOLT': {
+    id: 'SPELL-BOLT',
+    name: 'ศรมนตราอาร์เคน (Arcane Bolt)',
+    universe: 'arcane-dominion',
+    cardType: 'spell',
+    rarity: 'common',
+    cost: { charge: 2, rift: 1 },
+    playMode: 'cast-spell',
+    targetRule: {
+      mode: 'enemy-unit',
+      ownership: 'enemy',
+      promptText: 'เลือกยูนิตศัตรูเพื่อยิงศรมนตราสร้างความเสียหาย 4 หน่วย',
+      effectType: 'damage',
+      powerValue: 4,
+    },
+    flavor: 'รวมพลังงานเวทมนตร์บริสุทธิ์เป็นลูกศรแสงแล้วยิงทะลวงแนวป้องกันศัตรู',
+    abilities: [
+      {
+        id: 'ab-arcane-bolt',
+        name: 'ศรทะลวงเกราะ',
+        description: 'สร้างความเสียหาย 4 หน่วยแก่ยูนิตศัตรูเป้าหมาย',
+        trigger: 'active',
+        actionType: 'deal-damage',
+        powerValue: 4,
+      },
+    ],
+  },
+
+  'SPELL-RIFT-GATE': {
+    id: 'SPELL-RIFT-GATE',
+    name: 'ประตูมิติริฟต์ (Rift Gate)',
+    universe: 'arcane-dominion',
+    cardType: 'spell',
+    rarity: 'rare',
+    cost: { charge: 3, rift: 1 },
+    playMode: 'cast-spell',
+    targetRule: {
+      mode: 'empty-cell',
+      promptText: 'เลือกช่องว่างในสนามรบเพื่อเปิดประตูมิติอัญเชิญ ผู้บุกเบิกมิติริฟต์ (3/4)',
+      effectType: 'spawn',
+    },
+    flavor: 'ฉีกรอยแยกมิติกลางสนามรบเพื่อนำพานักรบมิติริฟต์ก้าวข้ามสู่แนวรบในพริบตา',
+    abilities: [
+      {
+        id: 'ab-rift-gate-spawn',
+        name: 'อัญเชิญข้ามมิติ',
+        description: 'อัญเชิญผู้บุกเบิกมิติริฟต์ (Void Vanguard 3/4) ลงในช่องว่างที่เลือก',
+        trigger: 'active',
+        actionType: 'teleport',
+      },
+    ],
+  },
+
+  'SPELL-METEOR': {
+    id: 'SPELL-METEOR',
+    name: 'ดงอุกกาบาต (Meteor Field)',
+    universe: 'arcane-dominion',
+    cardType: 'spell',
+    rarity: 'epic',
+    cost: { charge: 4, rift: 1 },
+    playMode: 'cast-spell',
+    targetRule: {
+      mode: 'cell-area',
+      areaRadius: 1,
+      promptText: 'เลือกจุดศูนย์กลางเพื่อเรียกฝนดาวตกถล่มพื้นที่ 3 ช่อง (ความเสียหาย 3 หน่วย)',
+      effectType: 'aoe-damage',
+      powerValue: 3,
+    },
+    flavor: 'ดึงดาวเคราะห์น้อยจากห้วงอวกาศลงมาบดขยี้แนวรบของศัตรูให้ราบเป็นหน้ากลอง',
+    abilities: [
+      {
+        id: 'ab-meteor-blast',
+        name: 'ดาวตกถล่มสมรภูมิ',
+        description: 'สร้างความเสียหาย 3 หน่วยแก่ทุกยูนิตในช่องเป้าหมายและช่องติดกัน',
+        trigger: 'active',
+        actionType: 'aoe-damage',
+        powerValue: 3,
+      },
+    ],
+  },
+
+  'SPELL-BATTLE-CRY': {
+    id: 'SPELL-BATTLE-CRY',
+    name: 'เสียงกู่ร้องศึก (Battle Cry)',
+    universe: 'iron-frontier',
+    cardType: 'tactic',
+    rarity: 'uncommon',
+    cost: { charge: 2 },
+    playMode: 'cast-spell',
+    targetRule: {
+      mode: 'lane',
+      promptText: 'เลือกเลนเป้าหมายเพื่อปลุกใจยูนิตฝ่ายเราทั้งหมด เพิ่มพลังโจมตี +2 ATK',
+      effectType: 'buff',
+      powerValue: 2,
+    },
+    flavor: 'เสียงแตรศึกและคำสั่งปลุกใจดังก้อง ปลุกเร้าความฮึกเหิมของเหล่าทหารหาญ',
+    abilities: [
+      {
+        id: 'ab-battle-cry',
+        name: 'ปลุกขวัญทหาร',
+        description: 'เพิ่มพลังโจมตี +2 ATK แก่ยูนิตฝ่ายเราทั้งหมดในเลนที่เลือกในเทิร์นนี้',
+        trigger: 'active',
+        actionType: 'stat-buff',
+        powerValue: 2,
+      },
+    ],
+  },
+
+  'SPELL-NEXUS-SURGE': {
+    id: 'SPELL-NEXUS-SURGE',
+    name: 'เน็กซัสคลื่นทะลัก (Nexus Surge)',
+    universe: 'neo-genesis',
+    cardType: 'spell',
+    rarity: 'rare',
+    cost: { charge: 3 },
+    playMode: 'cast-spell',
+    targetRule: {
+      mode: 'no-target',
+      promptText: 'คลิกเพื่อฟื้นฟูฐานเน็กซัส +4 HP และรับพลังงาน +2 Charge ทันที',
+      effectType: 'repair',
+      powerValue: 4,
+    },
+    flavor: 'หมุนเวียนแกนพลังงานหลักเพื่อส่งกระแสพลังงานสำรองมาซ่อมแซมฐานเน็กซัส',
+    abilities: [
+      {
+        id: 'ab-nexus-surge',
+        name: 'ซ่อมแซมแกนพลังงาน',
+        description: 'ฟื้นฟูพลังชีวิตฐานเน็กซัส 4 HP และได้รับ +2 Charge ทันที',
+        trigger: 'active',
+        actionType: 'repair',
+        powerValue: 4,
+      },
+    ],
+  },
+
+  'SPELL-FORTIFY': {
+    id: 'SPELL-FORTIFY',
+    name: 'เสริมปราการมั่นคง (Fortify)',
+    universe: 'iron-frontier',
+    cardType: 'tactic',
+    rarity: 'common',
+    cost: { charge: 2 },
+    playMode: 'cast-spell',
+    targetRule: {
+      mode: 'friendly-structure',
+      ownership: 'friendly',
+      promptText: 'เลือกสิ่งปลูกสร้างฝ่ายเราเพื่อเสริมแผ่นเกราะ +4 HP และ +2 เกราะป้องกัน (DEF)',
+      effectType: 'buff',
+      powerValue: 4,
+    },
+    flavor: 'แผ่นเหล็กหนาและกระสอบทรายถูกเสริมรอบฐานที่มั่นอย่างรวดเร็วเพื่อต้านทานการยิงถล่ม',
+    abilities: [
+      {
+        id: 'ab-fortify',
+        name: 'เสริมเกราะโครงสร้าง',
+        description: 'เพิ่ม HP สูงสุดและเลือดปัจจุบัน +4 และเกราะ +2 DEF แก่สิ่งปลูกสร้างฝ่ายเรา',
+        trigger: 'active',
+        actionType: 'stat-buff',
+      },
+    ],
+  },
+
+  'SPELL-OUTPOST-SABOTAGE': {
+    id: 'SPELL-OUTPOST-SABOTAGE',
+    name: 'วินาศกรรมฐานยุทธศาสตร์ (Outpost Sabotage)',
+    universe: 'neo-genesis',
+    cardType: 'tactic',
+    rarity: 'uncommon',
+    cost: { charge: 2 },
+    playMode: 'cast-spell',
+    targetRule: {
+      mode: 'outpost',
+      promptText: 'เลือกจุดยุทธศาสตร์แถวกลาง (Outpost) เพื่อขัดขวางและลดความคืบหน้าของศัตรูลง 50%',
+      effectType: 'capture-boost',
+      powerValue: 50,
+    },
+    flavor: 'แทรกซึมไวรัสนาโนเข้าสู่ระบบควบคุมจุดยุทธศาสตร์เพื่อตัดสัญญาณการครอบครองของฝ่ายตรงข้าม',
+    abilities: [
+      {
+        id: 'ab-sabotage',
+        name: 'รบกวนสัญญาณควบคุม',
+        description: 'ลดความคืบหน้าการยึดครองฐานของศัตรูลง 50% และสร้างความเสียหาย 2 ดาเมจแก่ยูนิตศัตรูในจุดนั้น',
+        trigger: 'active',
+        actionType: 'deal-damage',
+        powerValue: 2,
+      },
+    ],
+  },
+
+  'UNIT-VOID-VANGUARD': {
+    id: 'UNIT-VOID-VANGUARD',
+    name: 'ผู้บุกเบิกมิติริฟต์ (Void Vanguard)',
+    universe: 'arcane-dominion',
+    cardType: 'unit',
+    rarity: 'rare',
+    cost: { charge: 3, rift: 1 },
+    attack: 3,
+    health: 4,
+    defense: 1,
+    move: 2,
+    range: 1,
+    canCapture: true,
+    keywords: ['อสูรมิติ', 'เทเลพอร์ต'],
+    flavor: 'นักรบเงาผู้ก้าวข้ามผ่านประตูมิติริฟต์เพื่อเปิดฉากจู่โจมอย่างไม่ทันตั้งตัว',
   },
 };
 

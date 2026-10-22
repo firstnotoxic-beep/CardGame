@@ -19,11 +19,17 @@ import {
   getReachableCells,
 } from './game/battlefield';
 import {
+  canPlayCard,
+  resolveCardPlay,
+  executeUnitMovement,
+} from './game/cardEngine';
+import {
   executeCombat,
   performAirborneDeployment,
   resolveEconomyIncome,
   resolveOutpostCaptures,
 } from './game/combat';
+import { Lane } from './types/game';
 import { runAITurn } from './game/ai';
 import { BattlefieldView } from './components/BattlefieldView';
 import { CardView } from './components/CardView';
@@ -50,6 +56,8 @@ import {
   ChevronDown,
   Sparkles,
   Timer,
+  Target,
+  X,
 } from 'lucide-react';
 
 export default function App() {
@@ -180,6 +188,17 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('riftbound_match_history', JSON.stringify(matchHistory));
   }, [matchHistory]);
+
+  // Listen for Escape key to cancel card targeting without resource penalty
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && gameState?.actionMode === 'card-targeting') {
+        handleCancelTargeting();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [gameState?.actionMode]);
 
   // Factory function to start a new game match
   const startMatch = (mode: GamePlayMode, mapPresetId: string, roomCode?: string) => {
@@ -570,52 +589,101 @@ export default function App() {
     setGameState(current);
   };
 
+  // Cancel Targeting Action
+  const handleCancelTargeting = () => {
+    if (!gameState) return;
+    soundFx.playCardSelect();
+    setGameState({
+      ...gameState,
+      selectedCardInstanceId: null,
+      validTargetCellIds: [],
+      reachableCellIds: [],
+      attackableCellIds: [],
+      actionMode: 'idle',
+    });
+  };
+
   // Card Selection from Hand
   const handleHandCardClick = (cardInst: CardInstance) => {
     if (!gameState || gameState.winner || isAiThinking) return;
-    if (gameState.phase !== 'deployment') return;
 
     soundFx.playCardSelect();
-    const def = CARD_DATABASE[cardInst.definitionId];
-    if (!def) return;
+    const check = canPlayCard(gameState, gameState.activePlayerId, cardInst.instanceId);
 
-    const player = gameState.activePlayerId === 'player1' ? gameState.player1 : gameState.player2;
-    const canAfford =
-      player.resources.charge >= (def.cost.charge || 0) &&
-      player.resources.rift >= (def.cost.rift || 0);
-
-    if (!canAfford) return;
-
-    // Highlight legal deployment zones
-    // Units deploy in Base row (6 for P1, 0 for P2) or Rear row (5 for P1, 1 for P2)
-    const validRows = gameState.activePlayerId === 'player1' ? [6, 5] : [0, 1];
-    const reachable: string[] = [];
-
-    validRows.forEach((r) => {
-      [0, 1, 2].forEach((c) => {
-        const cellId = getCellId(r, c);
-        const cell = gameState.cells[cellId];
-        if (cell && !cell.unitId && !cell.structureId) {
-          reachable.push(cellId);
-        }
+    if (!check.canPlay) {
+      soundFx.playAttack('kinetic');
+      const errLog = `[แจ้งเตือน] ไม่สามารถใช้การ์ด "${check.cardDef?.name || ''}": ${check.reason || 'เงื่อนไขไม่ถูกต้อง'}`;
+      setGameState({
+        ...gameState,
+        combatLog: [errLog, ...gameState.combatLog],
       });
-    });
+      return;
+    }
 
+    // If card has no target or global targeting, resolve immediately
+    if (check.targetType === 'no-target' || check.targetType === 'global') {
+      const res = resolveCardPlay(gameState, gameState.activePlayerId, cardInst.instanceId, {});
+      if (res.success) {
+        let next = res.nextState;
+        if (res.logMessage) next.combatLog.unshift(res.logMessage);
+        if (next.winner) {
+          handleGameOver(next.winner, next);
+          return;
+        }
+        setGameState(next);
+      }
+      return;
+    }
+
+    // Otherwise enter card-targeting mode
     setGameState({
       ...gameState,
       selectedCardInstanceId: cardInst.instanceId,
       selectedUnitId: null,
       selectedCellId: null,
-      reachableCellIds: reachable,
+      reachableCellIds: [],
       attackableCellIds: [],
       airborneLandingCellIds: [],
-      actionMode: 'deploy',
+      validTargetCellIds: check.validCellIds,
+      actionMode: 'card-targeting',
     });
+  };
+
+  // Lane click targeting (for spells like Battle Cry or Carpet Bombing)
+  const handleLaneClick = (lane: Lane) => {
+    if (!gameState || gameState.winner || isAiThinking) return;
+    if (gameState.actionMode !== 'card-targeting' || !gameState.selectedCardInstanceId) return;
+
+    const res = resolveCardPlay(gameState, gameState.activePlayerId, gameState.selectedCardInstanceId, {
+      lane,
+    });
+    if (res.success) {
+      let next = res.nextState;
+      if (res.logMessage) next.combatLog.unshift(res.logMessage);
+      next.selectedCardInstanceId = null;
+      next.validTargetCellIds = [];
+      next.actionMode = 'idle';
+      if (next.winner) {
+        handleGameOver(next.winner, next);
+        return;
+      }
+      setGameState(next);
+    }
   };
 
   // Unit click on battlefield
   const handleUnitClick = (unit: UnitInstance) => {
     if (!gameState || gameState.winner || isAiThinking) return;
+
+    // If in card-targeting mode, allow clicking unit as target if its cell is valid
+    if (gameState.actionMode === 'card-targeting') {
+      const unitCellId = getCellId(unit.row, unit.col);
+      if (gameState.validTargetCellIds?.includes(unitCellId)) {
+        handleCellClick(unitCellId);
+        return;
+      }
+    }
+
     if (unit.owner !== gameState.activePlayerId) return;
 
     soundFx.playCardSelect();
@@ -644,6 +712,7 @@ export default function App() {
       reachableCellIds: reachable,
       attackableCellIds: attackable,
       airborneLandingCellIds: [],
+      validTargetCellIds: [],
       actionMode: gameState.phase === 'movement' ? 'move' : gameState.phase === 'combat' ? 'attack' : 'idle',
     });
   };
@@ -669,6 +738,7 @@ export default function App() {
       selectedCardInstanceId: null,
       reachableCellIds: [],
       attackableCellIds: [],
+      validTargetCellIds: [],
       airborneLandingCellIds: landingCells,
       actionMode: 'airbase-target',
     });
@@ -685,118 +755,61 @@ export default function App() {
       reachableCellIds,
       attackableCellIds,
       airborneLandingCellIds,
+      validTargetCellIds,
     } = gameState;
 
-    // 1. DEPLOYMENT CONFIRMATION
-    if (actionMode === 'deploy' && selectedCardInstanceId && reachableCellIds.includes(cellId)) {
-      const activePlayer = gameState.activePlayerId === 'player1' ? gameState.player1 : gameState.player2;
-      const cardInstIdx = activePlayer.hand.findIndex((c) => c.instanceId === selectedCardInstanceId);
-      if (cardInstIdx === -1) return;
-
-      const cardInst = activePlayer.hand[cardInstIdx];
-      const def = CARD_DATABASE[cardInst.definitionId];
-      if (!def) return;
-
+    // 0. CARD TARGETING RESOLUTION
+    if (
+      actionMode === 'card-targeting' &&
+      selectedCardInstanceId &&
+      validTargetCellIds?.includes(cellId)
+    ) {
       const targetCell = gameState.cells[cellId];
-      if (!targetCell) return;
-
-      // Deduct resources
-      activePlayer.resources.charge -= def.cost.charge || 0;
-      activePlayer.resources.rift -= def.cost.rift || 0;
-      activePlayer.hand.splice(cardInstIdx, 1);
-
-      if (def.cardType === 'unit') {
-        const unitId = `unit-${Date.now()}`;
-        gameState.units[unitId] = {
-          id: unitId,
-          cardInstanceId: cardInst.instanceId,
-          definitionId: def.id,
-          name: def.name,
-          owner: gameState.activePlayerId,
-          universe: def.universe,
-          attack: def.attack || 2,
-          currentHealth: def.health || 4,
-          maxHealth: def.health || 4,
-          defense: def.defense || 0,
-          movePoints: def.move || 2,
-          maxMove: def.move || 2,
-          range: def.range || 1,
-          canCapture: def.canCapture ?? true,
-          keywords: def.keywords || [],
-          statusEffects: [],
-          hasMovedThisTurn: false,
-          hasAttackedThisTurn: false,
-          lane: targetCell.lane,
-          row: targetCell.row,
-          col: targetCell.col,
-        };
-        targetCell.unitId = unitId;
-        soundFx.playDeploy();
-        gameState.combatLog.unshift(
-          `[DEPLOY] ${activePlayer.name} deployed ${def.name} in ${targetCell.lane.toUpperCase()} lane (${cellId}).`
-        );
-      } else if (def.cardType === 'structure') {
-        const structId = `struct-${Date.now()}`;
-        gameState.structures[structId] = {
-          id: structId,
-          cardInstanceId: cardInst.instanceId,
-          definitionId: def.id,
-          name: def.name,
-          owner: gameState.activePlayerId,
-          universe: def.universe,
-          currentHealth: def.health || 6,
-          maxHealth: def.health || 6,
-          defense: def.defense || 2,
-          lane: targetCell.lane,
-          row: targetCell.row,
-          col: targetCell.col,
-          structureType: def.id === 'IF-04' ? 'airbase' : 'bunker',
-        };
-        targetCell.structureId = structId;
-        soundFx.playDeploy();
-        gameState.combatLog.unshift(
-          `[CONSTRUCTION] ${activePlayer.name} constructed ${def.name} in ${targetCell.lane.toUpperCase()} lane.`
-        );
-      } else if (def.cardType === 'tactic') {
-        // Direct tactic resolution
-        soundFx.playAttack('arcane');
-        gameState.combatLog.unshift(
-          `[TACTIC] ${activePlayer.name} invoked ${def.name}: ${def.abilities?.[0]?.description || 'Tactic executed'}`
-        );
-      }
-
-      setGameState({
-        ...gameState,
-        selectedCardInstanceId: null,
-        reachableCellIds: [],
-        actionMode: 'idle',
+      const res = resolveCardPlay(gameState, gameState.activePlayerId, selectedCardInstanceId, {
+        cellId,
+        unitId: targetCell?.unitId || undefined,
+        structureId: targetCell?.structureId || undefined,
+        outpostId: targetCell?.outpostId || undefined,
+        lane: targetCell?.lane,
       });
+
+      if (res.success) {
+        let next = res.nextState;
+        if (res.logMessage) next.combatLog.unshift(res.logMessage);
+        next.selectedCardInstanceId = null;
+        next.validTargetCellIds = [];
+        next.actionMode = 'idle';
+        if (next.winner) {
+          handleGameOver(next.winner, next);
+          return;
+        }
+        setGameState(next);
+      }
       return;
     }
 
-    // 2. MOVEMENT CONFIRMATION
+    // 1. DEPLOYMENT CONFIRMATION (Legacy fallback if deploy mode)
+    if (actionMode === 'deploy' && selectedCardInstanceId && reachableCellIds.includes(cellId)) {
+      const res = resolveCardPlay(gameState, gameState.activePlayerId, selectedCardInstanceId, {
+        cellId,
+      });
+      if (res.success) {
+        let next = res.nextState;
+        if (res.logMessage) next.combatLog.unshift(res.logMessage);
+        next.selectedCardInstanceId = null;
+        next.reachableCellIds = [];
+        next.actionMode = 'idle';
+        setGameState(next);
+      }
+      return;
+    }
+
+    // 2. MOVEMENT CONFIRMATION (Using robust BFS engine)
     if (actionMode === 'move' && selectedUnitId && reachableCellIds.includes(cellId)) {
-      const unit = gameState.units[selectedUnitId];
-      const targetCell = gameState.cells[cellId];
-      if (!unit || !targetCell) return;
-
-      const originCell = gameState.cells[getCellId(unit.row, unit.col)];
-      if (originCell) originCell.unitId = null;
-
-      unit.row = targetCell.row;
-      unit.col = targetCell.col;
-      unit.lane = targetCell.lane;
-      unit.hasMovedThisTurn = true;
-      unit.movePoints = 0;
-      targetCell.unitId = unit.id;
-
-      soundFx.playMove();
-      gameState.combatLog.unshift(
-        `[MOVE] ${unit.name} maneuvered to ${targetCell.lane.toUpperCase()} lane (${cellId}).`
-      );
-
+      const { nextState, logMessage } = executeUnitMovement(gameState, selectedUnitId, cellId);
+      if (logMessage) nextState.combatLog.unshift(logMessage);
       setGameState({
-        ...gameState,
+        ...nextState,
         selectedUnitId: null,
         selectedCellId: null,
         reachableCellIds: [],
@@ -966,6 +979,12 @@ export default function App() {
   const canAffordAirborne =
     (activeP?.resources.charge ?? 0) >= 3 && (activeP?.resources.rift ?? 0) >= 1;
 
+  const targetingCardDef = gameState?.selectedCardInstanceId
+    ? CARD_DATABASE[
+        activeP?.hand.find((c) => c.instanceId === gameState.selectedCardInstanceId)?.definitionId || ''
+      ]
+    : null;
+
   return (
     <div className="flex flex-col min-h-screen w-full bg-slate-950 text-slate-100 select-none overflow-x-hidden">
       {/* 1. แถบสถานะส่วนบนและตัวจับเวลาเทิร์น (TOP STATUS BAR & TURN TIMER) */}
@@ -1076,12 +1095,48 @@ export default function App() {
       {/* 2. MAIN BATTLE AREA & SIDEBAR */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-3 max-w-7xl mx-auto w-full overflow-hidden">
         {/* BATTLEFIELD GRID (8 cols) */}
-        <div className="lg:col-span-8 flex flex-col justify-center">
+        <div className="lg:col-span-8 flex flex-col justify-center relative">
+          {/* FLOATING TARGETING BANNER */}
+          {gameState.actionMode === 'card-targeting' && targetingCardDef && (
+            <div className="mb-2 p-3 bg-purple-950/95 border border-purple-500 rounded-xl shadow-2xl flex items-center justify-between gap-3 backdrop-blur-md z-30 animate-pulse">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-purple-900 border border-purple-400 flex items-center justify-center shrink-0">
+                  <Target className="w-5 h-5 text-purple-200" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-purple-100 truncate">
+                      กำลังเลือกเป้าหมาย: {targetingCardDef.name}
+                    </span>
+                    <span className="text-[10px] font-mono font-bold text-amber-300 bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-500/40 shrink-0">
+                      ⚡{targetingCardDef.cost.charge || 0}
+                      {targetingCardDef.cost.rift ? ` 🌀${targetingCardDef.cost.rift}` : ''}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-purple-300/90 truncate">
+                    {targetingCardDef.targetRule?.promptText || 'คลิกเลือกช่อง ยูนิต หรือเลนที่ถูกไฮไลต์ในสนามรบ'}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCancelTargeting}
+                className="px-3 py-1.5 rounded-lg bg-rose-600/90 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shrink-0 flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>ยกเลิก (Cancel)</span>
+                <span className="text-[9px] opacity-75 font-mono hidden sm:inline">[ESC]</span>
+              </button>
+            </div>
+          )}
+
           <BattlefieldView
             state={gameState}
             onCellClick={handleCellClick}
             onUnitClick={handleUnitClick}
             onAirbaseDropClick={handleAirbaseDropClick}
+            onLaneClick={handleLaneClick}
             canPerformAirborneDrop={canAffordAirborne}
             selectedAirbase={selectedAirbase}
           />

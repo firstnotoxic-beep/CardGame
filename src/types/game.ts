@@ -7,6 +7,7 @@ export type Universe =
 
 export type CardType =
   | 'unit'
+  | 'spell'
   | 'tactic'
   | 'relic'
   | 'domain'
@@ -71,8 +72,40 @@ export interface CardAbility {
     | 'stat-buff'
     | 'teleport'
     | 'outpost-capture-boost'
+    | 'repair'
     | 'aoe-damage';
   powerValue?: number;
+}
+
+export type TargetingMode =
+  | 'no-target'
+  | 'friendly-unit'
+  | 'enemy-unit'
+  | 'any-unit'
+  | 'empty-cell'
+  | 'friendly-structure'
+  | 'enemy-structure'
+  | 'outpost'
+  | 'cell-area'
+  | 'lane'
+  | 'global';
+
+export type CardPlayMode =
+  | 'deploy-unit'
+  | 'build-structure'
+  | 'cast-spell'
+  | 'equip-relic'
+  | 'activate-domain';
+
+export interface CardTargetRule {
+  mode: TargetingMode;
+  ownership?: 'friendly' | 'enemy' | 'any';
+  range?: number; // -1 or undefined for unrestricted range
+  validRows?: number[]; // row restrictions for deployment
+  areaRadius?: number; // for cell-area blast radius
+  effectType?: 'heal' | 'damage' | 'buff' | 'spawn' | 'capture-boost' | 'repair' | 'resource' | 'aoe-damage';
+  powerValue?: number;
+  promptText?: string;
 }
 
 export interface CardDefinition {
@@ -82,6 +115,8 @@ export interface CardDefinition {
   cardType: CardType;
   rarity: Rarity;
   cost: CardCost;
+  playMode?: CardPlayMode;
+  targetRule?: CardTargetRule;
   attack?: number;
   health?: number;
   defense?: number;
@@ -232,7 +267,9 @@ export interface GameState {
   reachableCellIds: string[];
   attackableCellIds: string[];
   airborneLandingCellIds: string[];
-  actionMode: 'idle' | 'deploy' | 'move' | 'attack' | 'airbase-target' | 'tactic-target';
+  validTargetCellIds?: string[];
+  targetedLane?: Lane | null;
+  actionMode: 'idle' | 'deploy' | 'move' | 'attack' | 'airbase-target' | 'tactic-target' | 'card-targeting';
   combatLog: string[];
   winner: 'player1' | 'player2' | null;
   winReason?: string;
